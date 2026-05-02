@@ -1,14 +1,32 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 const STEPS = [
-  { label: 'GP referral sent',       date: '12 Jan 2025', done: true  },
-  { label: 'Received by UCLH',       date: '18 Jan 2025', done: true  },
-  { label: 'Under clinical review',  date: '3 Feb 2025',  done: true  },
-  { label: 'Appointment booking',    date: 'Est. Mar 2025', done: false },
-  { label: 'First appointment',      date: 'Est. May 2025', done: false },
+  { label: 'GP referral sent', date: '12 Jan 2025', done: true },
+  { label: 'Received by UCLH', date: '18 Jan 2025', done: true },
+  { label: 'Under clinical review', date: '3 Feb 2025', done: true },
+  { label: 'Appointment booking', date: 'Est. Mar 2025', done: false },
+  { label: 'First appointment', date: 'Est. May 2025', done: false },
 ];
 
 export default function TrackScreen() {
+  const [specialty, setSpecialty] = useState('');
+  const [hospital, setHospital] = useState('');
+  const [referralDate, setReferralDate] = useState('');
+
+  useEffect(() => {
+    async function load() {
+      const spec = await AsyncStorage.getItem('user_specialty');
+      const hosp = await AsyncStorage.getItem('user_hospital');
+      const date = await AsyncStorage.getItem('user_referral_date');
+      if (spec) setSpecialty(spec);
+      if (hosp) setHospital(hosp);
+      if (date) setReferralDate(date);
+    }
+    load();
+  }, []);
+
   return (
     <ScrollView style={styles.container}>
 
@@ -24,8 +42,8 @@ export default function TrackScreen() {
         {/* Top row */}
         <View style={styles.cardTop}>
           <View>
-            <Text style={styles.cardTitle}>Cardiology</Text>
-            <Text style={styles.cardSub}>Dr. Ahmed · Hammersmith Surgery</Text>
+            <Text style={styles.cardTitle}>{specialty || 'Your referral'}</Text>
+            <Text style={styles.cardSub}>{referralDate} · {hospital}</Text>
           </View>
           <View style={styles.statusBadge}>
             <Text style={styles.statusText}>On track</Text>
@@ -44,10 +62,10 @@ export default function TrackScreen() {
         {/* Details grid */}
         <View style={styles.detailGrid}>
           {[
-            { label: 'REFERRED',  value: '12 Jan 2025', color: '#1C1C1E' },
-            { label: 'DEADLINE',  value: '12 May 2025', color: '#1C1C1E' },
-            { label: 'TRUST',     value: 'UCLH',        color: '#1C1C1E' },
-            { label: 'STATUS',    value: 'Under review', color: '#3B6D11' },
+            { label: 'REFERRED', value: referralDate || 'Unknown', color: '#1C1C1E' },
+            { label: 'DEADLINE', value: '18 weeks from referral', color: '#1C1C1E' },
+            { label: 'TRUST', value: hospital || 'Your trust', color: '#1C1C1E' },
+            { label: 'STATUS', value: 'Under review', color: '#3B6D11' },
           ].map(d => (
             <View key={d.label} style={styles.detailItem}>
               <Text style={styles.detailLabel}>{d.label}</Text>

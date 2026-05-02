@@ -1,22 +1,8 @@
 import { useState } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { DATA_SOURCE, NHS_RTT_DATA, SPECIALTY_NAMES } from '../../constants/nhsData';
 
-const SPECIALTIES = ['Cardiology', 'Orthopaedics', 'Eye', 'Dermatology', 'ENT', 'Urology'];
 
-const HOSPITALS = [
-  { name: 'Royal Cornwall',         region: 'South West',          weeks: 8  },
-  { name: 'Lancashire Teaching',    region: 'North West',          weeks: 11 },
-  { name: 'Salford Royal',          region: 'North West',          weeks: 13 },
-  { name: 'Cambridge University',   region: 'East of England',     weeks: 14 },
-  { name: 'Southampton University', region: 'South East',          weeks: 16 },
-  { name: 'Newcastle upon Tyne',    region: 'North East',          weeks: 17 },
-  { name: 'Royal Devon',            region: 'South West',          weeks: 19 },
-  { name: "Guy's & St Thomas'",     region: 'London',              weeks: 21 },
-  { name: 'Leeds Teaching',         region: 'North East',          weeks: 22 },
-  { name: 'UCLH',                   region: 'London',              weeks: 24 },
-  { name: 'Barts Health',           region: 'London',              weeks: 26 },
-  { name: 'UHB Birmingham',         region: 'Midlands',            weeks: 28 },
-];
 
 function getStatus(weeks: number) {
   if (weeks <= 10) return { label: 'Short wait',  bg: '#EAF3DE', color: '#3B6D11' };
@@ -26,6 +12,9 @@ function getStatus(weeks: number) {
 
 export default function FindScreen() {
   const [selected, setSelected] = useState(0);
+  const currentSpecialty = SPECIALTY_NAMES[selected];
+  const specialtyData = NHS_RTT_DATA[currentSpecialty];
+  const HOSPITALS = specialtyData?.hospitals || [];
 
   return (
     <ScrollView style={styles.container}>
@@ -38,7 +27,7 @@ export default function FindScreen() {
 
       {/* SPECIALTY PILLS */}
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.pillRow}>
-        {SPECIALTIES.map((s, i) => (
+        {SPECIALTY_NAMES.map((s, i) => (
           <TouchableOpacity
             key={s}
             style={[styles.pill, i === selected && styles.pillActive]}
@@ -51,7 +40,7 @@ export default function FindScreen() {
 
       {/* INFO ROW */}
       <View style={styles.infoRow}>
-        <Text style={styles.infoText}>{SPECIALTIES[selected]} · sorted by shortest wait</Text>
+        <Text style={styles.infoText}>{currentSpecialty} · NHS England data {DATA_SOURCE.period}</Text>
         <View style={styles.nhsBadge}>
           <Text style={styles.nhsBadgeText}>NHS</Text>
         </View>
@@ -60,7 +49,7 @@ export default function FindScreen() {
       {/* HOSPITAL LIST */}
       <View style={styles.listContainer}>
         {HOSPITALS.map((h, i) => {
-          const status = getStatus(h.weeks);
+          const status = getStatus(h.medianWeeks);
           const isTop = i === 0;
           return (
             <View key={h.name} style={[styles.hospitalCard, isTop && styles.hospitalCardTop]}>
@@ -78,7 +67,7 @@ export default function FindScreen() {
                   <Text style={styles.hospitalRegion}>{h.region}</Text>
                 </View>
                 <Text style={[styles.weeks, isTop && { color: '#005EB8' }]}>
-                  {h.weeks}<Text style={styles.weeksLabel}>w</Text>
+                  {h.medianWeeks}<Text style={styles.weeksLabel}>w</Text>
                 </Text>
               </View>
 

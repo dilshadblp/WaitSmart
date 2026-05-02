@@ -56,8 +56,8 @@ export default function HomeScreen() {
           <View style={styles.progressFill} />
         </View>
         <View style={styles.progressRow}>
-          <Text style={styles.progressText}>Week 14 of 18</Text>
-          <Text style={styles.progressText}>4 weeks left</Text>
+          <Text style={styles.progressText}>{referralDate ? `Referred: ${referralDate}` : 'Referral in progress'}</Text>
+          <Text style={styles.progressText}>18 week target</Text>
         </View>
       </View>
 
@@ -65,7 +65,7 @@ export default function HomeScreen() {
       <TouchableOpacity style={styles.alertStrip} onPress={() => router.push('/find')}>
         <View style={{ flex: 1 }}>
           <Text style={styles.alertTitle}>⚠ Shorter wait found nearby</Text>
-          <Text style={styles.alertSub}>Royal Cornwall: 8 weeks vs your 14 — you can legally switch</Text>
+          <Text style={styles.alertSub}>Tap to find NHS hospitals with shorter waits than your current trust</Text>
         </View>
         <Text style={styles.alertArrow}>›</Text>
       </TouchableOpacity>
@@ -201,7 +201,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     borderRadius: 99,
     height: 7,
-    width: '77%',
+    width: '50%',
   },
   progressRow: {
     flexDirection: 'row',
