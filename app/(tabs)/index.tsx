@@ -1,7 +1,29 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router } from 'expo-router';
+import { useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 export default function HomeScreen() {
+  const [userName, setUserName] = useState('');
+  const [specialty, setSpecialty] = useState('');
+  const [hospital, setHospital] = useState('');
+  const [referralDate, setReferralDate] = useState('');
+
+  useEffect(() => {
+    loadUserData();
+  }, []);
+
+  async function loadUserData() {
+    const name = await AsyncStorage.getItem('user_name');
+    const spec = await AsyncStorage.getItem('user_specialty');
+    const hosp = await AsyncStorage.getItem('user_hospital');
+    const date = await AsyncStorage.getItem('user_referral_date');
+    if (name) setUserName(name);
+    if (spec) setSpecialty(spec);
+    if (hosp) setHospital(hosp);
+    if (date) setReferralDate(date);
+  }
+
   return (
     <ScrollView style={styles.container}>
 
@@ -9,18 +31,18 @@ export default function HomeScreen() {
       <View style={styles.header}>
         <View>
           <Text style={styles.greeting}>Good morning</Text>
-          <Text style={styles.name}>Sarah</Text>
+          <Text style={styles.name}>{userName || 'Welcome'}</Text>
         </View>
         <View style={styles.avatar}>
-          <Text style={styles.avatarText}>S</Text>
+          <Text style={styles.avatarText}>{userName ? userName[0].toUpperCase() : 'W'}</Text>
         </View>
       </View>
 
       {/* BLUE REFERRAL CARD */}
       <View style={styles.referralCard}>
         <Text style={styles.referralLabel}>YOUR ACTIVE REFERRAL</Text>
-        <Text style={styles.referralTitle}>Cardiology</Text>
-        <Text style={styles.referralSub}>Dr. Ahmed · 12 Jan 2025 · UCLH</Text>
+        <Text style={styles.referralTitle}>{specialty || 'No referral yet'}</Text>
+        <Text style={styles.referralSub}>{referralDate} · {hospital}</Text>
 
         {/* Progress bar */}
         <View style={styles.progressBg}>
