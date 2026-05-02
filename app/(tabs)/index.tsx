@@ -88,7 +88,7 @@ export default function HomeScreen() {
             <Text style={styles.statSub}>on target</Text>
           </View>
         </View>
-        <TouchableOpacity style={styles.statsBtn}>
+        <TouchableOpacity style={styles.statsBtn} onPress={() => router.push('/rights')}>
           <Text style={styles.statsBtnText}>Your right to choose a faster trust ›</Text>
         </TouchableOpacity>
       </View>
