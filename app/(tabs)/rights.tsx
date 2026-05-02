@@ -1,4 +1,4 @@
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Linking, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 const RIGHTS = [
   {
@@ -9,6 +9,7 @@ const RIGHTS = [
     body: 'You have a legal right to start treatment within 18 weeks of your GP referral. If this is breached, your trust must offer you an alternative provider immediately.',
     cta: 'Check my status →',
     ctaColor: '#005EB8',
+    url: 'https://www.england.nhs.uk/long-read/national-elective-access-policy/',
   },
   {
     title: 'Right to choose',
@@ -18,6 +19,7 @@ const RIGHTS = [
     body: 'You can choose to be treated at ANY NHS trust in England — not just your local one. This has been your legal right since 2012 but most patients never knew it existed.',
     cta: 'Find a faster trust →',
     ctaColor: '#005EB8',
+    url: 'https://www.gov.uk/government/publications/the-nhs-choice-framework/the-nhs-choice-framework-what-choices-are-available-to-me-in-the-nhs',
   },
   {
     title: 'Second opinion',
@@ -27,6 +29,7 @@ const RIGHTS = [
     body: 'You can ask your GP for a referral to another specialist for a second medical opinion. Your GP must support any reasonable request — we have template letters ready.',
     cta: 'Get template letter →',
     ctaColor: '#005EB8',
+    url: 'https://www.royalfree.nhs.uk/patients-and-visitors/patient-information-leaflets/changing-your-nhs-hospital-doctor-or-asking-second-opinion',
   },
   {
     title: 'Access your records',
@@ -36,6 +39,7 @@ const RIGHTS = [
     body: 'You have the right to access your full NHS records including referral letters, test results and clinical notes. Your trust must respond within 1 month by law.',
     cta: 'Learn how →',
     ctaColor: '#005EB8',
+    url: 'https://www.ageuk.org.uk/information-advice/health-wellbeing/health-services/healthcare-rights/',
   },
 ];
 
@@ -65,7 +69,7 @@ export default function RightsScreen() {
           <Text style={styles.cardBody}>{r.body}</Text>
 
           {/* CTA link */}
-          <TouchableOpacity>
+          <TouchableOpacity onPress={() => Linking.openURL(r.url)}>
             <Text style={[styles.cta, { color: r.ctaColor }]}>{r.cta}</Text>
           </TouchableOpacity>
 
@@ -78,7 +82,10 @@ export default function RightsScreen() {
         <Text style={styles.complaintBody}>
           We guide you step by step through NHS complaints — including PALS, NHS England escalation, and the Parliamentary Ombudsman.
         </Text>
-        <TouchableOpacity style={styles.complaintBtn}>
+        <TouchableOpacity
+          style={styles.complaintBtn}
+          onPress={() => Linking.openURL('https://www.england.nhs.uk/contact-us/feedback-and-complaints/complaint/')}
+        >
           <Text style={styles.complaintBtnText}>Start complaint guide ›</Text>
         </TouchableOpacity>
       </View>
