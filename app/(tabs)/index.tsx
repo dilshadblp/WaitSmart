@@ -1,3 +1,4 @@
+import { router } from 'expo-router';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 export default function HomeScreen() {
@@ -32,7 +33,7 @@ export default function HomeScreen() {
       </View>
 
       {/* ORANGE ALERT STRIP */}
-      <TouchableOpacity style={styles.alertStrip}>
+      <TouchableOpacity style={styles.alertStrip} onPress={() => router.push('/find')}>
         <View style={{ flex: 1 }}>
           <Text style={styles.alertTitle}>⚠ Shorter wait found nearby</Text>
           <Text style={styles.alertSub}>Royal Cornwall: 8 weeks vs your 14 — you can legally switch</Text>
@@ -43,32 +44,31 @@ export default function HomeScreen() {
       {/* 4 ACTION BUTTONS */}
       <View style={styles.grid}>
 
-        <TouchableOpacity style={styles.gridBtn}>
+        <TouchableOpacity style={styles.gridBtn} onPress={() => router.push('/find')}>
           <View style={[styles.gridIcon, { backgroundColor: '#E6F1FB' }]} />
           <Text style={styles.gridTitle}>Find shorter wait</Text>
           <Text style={styles.gridSub}>Any specialty, any trust</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.gridBtn}>
+        <TouchableOpacity style={styles.gridBtn} onPress={() => router.push('/track')}>
           <View style={[styles.gridIcon, { backgroundColor: '#EAF3DE' }]} />
           <Text style={styles.gridTitle}>Track referral</Text>
           <Text style={styles.gridSub}>1 active · On track</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.gridBtn}>
+        <TouchableOpacity style={styles.gridBtn} onPress={() => router.push('/rights')}>
           <View style={[styles.gridIcon, { backgroundColor: '#FAEEDA' }]} />
           <Text style={styles.gridTitle}>Know your rights</Text>
           <Text style={styles.gridSub}>Patient guide 2025</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.gridBtn}>
+        <TouchableOpacity style={styles.gridBtn} onPress={() => router.push('/find')}>
           <View style={[styles.gridIcon, { backgroundColor: '#F1EFE8' }]} />
           <Text style={styles.gridTitle}>GP fast lane</Text>
           <Text style={styles.gridSub}>Same-day slots near you</Text>
         </TouchableOpacity>
 
       </View>
-
       {/* NHS STATS BOX */}
       <View style={styles.statsCard}>
         <Text style={styles.statsLabel}>NHS ENGLAND · LIVE SNAPSHOT</Text>
