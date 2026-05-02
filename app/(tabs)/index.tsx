@@ -1,98 +1,299 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
-
-import { HelloWave } from '@/components/hello-wave';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Link } from 'expo-router';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 export default function HomeScreen() {
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <Link href="/modal">
-          <Link.Trigger>
-            <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-          </Link.Trigger>
-          <Link.Preview />
-          <Link.Menu>
-            <Link.MenuAction title="Action" icon="cube" onPress={() => alert('Action pressed')} />
-            <Link.MenuAction
-              title="Share"
-              icon="square.and.arrow.up"
-              onPress={() => alert('Share pressed')}
-            />
-            <Link.Menu title="More" icon="ellipsis">
-              <Link.MenuAction
-                title="Delete"
-                icon="trash"
-                destructive
-                onPress={() => alert('Delete pressed')}
-              />
-            </Link.Menu>
-          </Link.Menu>
-        </Link>
+    <ScrollView style={styles.container}>
 
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+      {/* TOP HEADER */}
+      <View style={styles.header}>
+        <View>
+          <Text style={styles.greeting}>Good morning</Text>
+          <Text style={styles.name}>Sarah</Text>
+        </View>
+        <View style={styles.avatar}>
+          <Text style={styles.avatarText}>S</Text>
+        </View>
+      </View>
+
+      {/* BLUE REFERRAL CARD */}
+      <View style={styles.referralCard}>
+        <Text style={styles.referralLabel}>YOUR ACTIVE REFERRAL</Text>
+        <Text style={styles.referralTitle}>Cardiology</Text>
+        <Text style={styles.referralSub}>Dr. Ahmed · 12 Jan 2025 · UCLH</Text>
+
+        {/* Progress bar */}
+        <View style={styles.progressBg}>
+          <View style={styles.progressFill} />
+        </View>
+        <View style={styles.progressRow}>
+          <Text style={styles.progressText}>Week 14 of 18</Text>
+          <Text style={styles.progressText}>4 weeks left</Text>
+        </View>
+      </View>
+
+      {/* ORANGE ALERT STRIP */}
+      <TouchableOpacity style={styles.alertStrip}>
+        <View style={{ flex: 1 }}>
+          <Text style={styles.alertTitle}>⚠ Shorter wait found nearby</Text>
+          <Text style={styles.alertSub}>Royal Cornwall: 8 weeks vs your 14 — you can legally switch</Text>
+        </View>
+        <Text style={styles.alertArrow}>›</Text>
+      </TouchableOpacity>
+
+      {/* 4 ACTION BUTTONS */}
+      <View style={styles.grid}>
+
+        <TouchableOpacity style={styles.gridBtn}>
+          <View style={[styles.gridIcon, { backgroundColor: '#E6F1FB' }]} />
+          <Text style={styles.gridTitle}>Find shorter wait</Text>
+          <Text style={styles.gridSub}>Any specialty, any trust</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.gridBtn}>
+          <View style={[styles.gridIcon, { backgroundColor: '#EAF3DE' }]} />
+          <Text style={styles.gridTitle}>Track referral</Text>
+          <Text style={styles.gridSub}>1 active · On track</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.gridBtn}>
+          <View style={[styles.gridIcon, { backgroundColor: '#FAEEDA' }]} />
+          <Text style={styles.gridTitle}>Know your rights</Text>
+          <Text style={styles.gridSub}>Patient guide 2025</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.gridBtn}>
+          <View style={[styles.gridIcon, { backgroundColor: '#F1EFE8' }]} />
+          <Text style={styles.gridTitle}>GP fast lane</Text>
+          <Text style={styles.gridSub}>Same-day slots near you</Text>
+        </TouchableOpacity>
+
+      </View>
+
+      {/* NHS STATS BOX */}
+      <View style={styles.statsCard}>
+        <Text style={styles.statsLabel}>NHS ENGLAND · LIVE SNAPSHOT</Text>
+        <View style={styles.statsRow}>
+          <View style={styles.statItem}>
+            <Text style={styles.statNumber}>7.6M</Text>
+            <Text style={styles.statSub}>waiting</Text>
+          </View>
+          <View style={styles.statDivider} />
+          <View style={styles.statItem}>
+            <Text style={[styles.statNumber, { color: '#A32D2D' }]}>41%</Text>
+            <Text style={styles.statSub}>over 18wk</Text>
+          </View>
+          <View style={styles.statDivider} />
+          <View style={styles.statItem}>
+            <Text style={[styles.statNumber, { color: '#3B6D11' }]}>59%</Text>
+            <Text style={styles.statSub}>on target</Text>
+          </View>
+        </View>
+        <TouchableOpacity style={styles.statsBtn}>
+          <Text style={styles.statsBtnText}>Your right to choose a faster trust ›</Text>
+        </TouchableOpacity>
+      </View>
+
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
+
+  container: {
+    flex: 1,
+    backgroundColor: '#F2F2F7',
+    paddingTop: 60,
+  },
+
+  // Header
+  header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+    marginBottom: 20,
+  },
+  greeting: {
+    fontSize: 13,
+    color: '#8E8E93',
+    marginBottom: 2,
+  },
+  name: {
+    fontSize: 26,
+    fontWeight: '500',
+    color: '#1C1C1E',
+  },
+  avatar: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: '#005EB8',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  avatarText: {
+    color: 'white',
+    fontSize: 17,
+    fontWeight: '500',
+  },
+
+  // Referral card
+  referralCard: {
+    backgroundColor: '#005EB8',
+    marginHorizontal: 20,
+    borderRadius: 18,
+    padding: 18,
+    marginBottom: 12,
+  },
+  referralLabel: {
+    color: 'rgba(255,255,255,0.7)',
+    fontSize: 10,
+    letterSpacing: 1,
+    marginBottom: 5,
+  },
+  referralTitle: {
+    color: 'white',
+    fontSize: 22,
+    fontWeight: '500',
+    marginBottom: 3,
+  },
+  referralSub: {
+    color: 'rgba(255,255,255,0.75)',
+    fontSize: 12,
+    marginBottom: 16,
+  },
+  progressBg: {
+    backgroundColor: 'rgba(255,255,255,0.25)',
+    borderRadius: 99,
+    height: 7,
+    marginBottom: 7,
+  },
+  progressFill: {
+    backgroundColor: 'white',
+    borderRadius: 99,
+    height: 7,
+    width: '77%',
+  },
+  progressRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  progressText: {
+    color: 'rgba(255,255,255,0.85)',
+    fontSize: 11,
+  },
+
+  // Alert strip
+  alertStrip: {
+    backgroundColor: '#FAEEDA',
+    marginHorizontal: 20,
+    borderRadius: 14,
+    padding: 13,
+    marginBottom: 14,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 8,
+    borderLeftWidth: 3,
+    borderLeftColor: '#EF9F27',
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
+  alertTitle: {
+    fontSize: 13,
+    fontWeight: '500',
+    color: '#7C4A00',
+    marginBottom: 2,
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  alertSub: {
+    fontSize: 11,
+    color: '#854F0B',
+    lineHeight: 16,
   },
+  alertArrow: {
+    fontSize: 24,
+    color: '#854F0B',
+    marginLeft: 8,
+  },
+
+  // 4 button grid
+  grid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    paddingHorizontal: 20,
+    gap: 10,
+    marginBottom: 14,
+  },
+  gridBtn: {
+    backgroundColor: 'white',
+    borderRadius: 16,
+    padding: 14,
+    width: '47%',
+    borderWidth: 0.5,
+    borderColor: '#E5E5EA',
+  },
+  gridIcon: {
+    width: 32,
+    height: 32,
+    borderRadius: 9,
+    marginBottom: 10,
+  },
+  gridTitle: {
+    fontSize: 13,
+    fontWeight: '500',
+    color: '#1C1C1E',
+    marginBottom: 2,
+  },
+  gridSub: {
+    fontSize: 11,
+    color: '#8E8E93',
+  },
+
+  // NHS stats
+  statsCard: {
+    backgroundColor: 'white',
+    marginHorizontal: 20,
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 40,
+    borderWidth: 0.5,
+    borderColor: '#E5E5EA',
+  },
+  statsLabel: {
+    fontSize: 10,
+    color: '#8E8E93',
+    fontWeight: '500',
+    letterSpacing: 0.8,
+    marginBottom: 12,
+  },
+  statsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    marginBottom: 12,
+  },
+  statItem: {
+    alignItems: 'center',
+  },
+  statNumber: {
+    fontSize: 22,
+    fontWeight: '500',
+    color: '#1C1C1E',
+  },
+  statSub: {
+    fontSize: 10,
+    color: '#8E8E93',
+    marginTop: 2,
+  },
+  statDivider: {
+    width: 0.5,
+    backgroundColor: '#E5E5EA',
+  },
+  statsBtn: {
+    backgroundColor: '#F2F2F7',
+    borderRadius: 10,
+    padding: 10,
+    alignItems: 'center',
+  },
+  statsBtnText: {
+    fontSize: 12,
+    color: '#005EB8',
+    fontWeight: '500',
+  },
+
 });
