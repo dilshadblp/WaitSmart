@@ -9,6 +9,13 @@ export default function HomeScreen() {
   const [hospital, setHospital] = useState('');
   const [referralDate, setReferralDate] = useState('');
 
+  function getGreeting() {
+    const hour = new Date().getHours();
+    if (hour < 12) return 'Good morning';
+    if (hour < 17) return 'Good afternoon';
+    return 'Good evening';
+  }
+
   useEffect(() => {
     loadUserData();
   }, []);
@@ -30,7 +37,7 @@ export default function HomeScreen() {
       {/* TOP HEADER */}
       <View style={styles.header}>
         <View>
-          <Text style={styles.greeting}>Good morning</Text>
+          <Text style={styles.greeting}>{getGreeting()}</Text>
           <Text style={styles.name}>{userName || 'Welcome'}</Text>
         </View>
         <View style={styles.avatar}>
