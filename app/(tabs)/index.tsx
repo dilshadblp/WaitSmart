@@ -2,6 +2,9 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { CONFIG } from '../../constants/config';
+
+
 
 export default function HomeScreen() {
   const [userName, setUserName] = useState('');
@@ -17,12 +20,20 @@ export default function HomeScreen() {
     if (hour < 17) return 'Good afternoon';
     return 'Good evening';
   }
+  function getProgressWidth(): `${number}%` {
+    if (!referralDate) return '10%';
+    const referred = new Date(referralDate);
+    const now = new Date();
+    const weeksWaited = Math.floor(
+      (now.getTime() - referred.getTime()) / (1000 * 60 * 60 * 24 * 7)
+    );
+    const percent = Math.min(Math.round((weeksWaited / 18) * 100), 100);
+    return `${percent}%`;
+  }
   async function fetchLiveStats() {
     try {
       setStatsLoading(true);
-      const response = await fetch(
-        'https://raw.githubusercontent.com/dilshadblp/WaitSmart/main/nhs-live-stats.json'
-      );
+      const response = await fetch(CONFIG.NHS_STATS_URL);
       const data = await response.json();
       setNhsStats(data);
     } catch (e) {
@@ -70,7 +81,7 @@ export default function HomeScreen() {
 
         {/* Progress bar */}
         <View style={styles.progressBg}>
-          <View style={styles.progressFill} />
+          <View style={[styles.progressFill, { width: getProgressWidth() }]} />
         </View>
         <View style={styles.progressRow}>
           <Text style={styles.progressText}>{referralDate ? `Referred: ${referralDate}` : 'Referral in progress'}</Text>
@@ -99,7 +110,7 @@ export default function HomeScreen() {
         <TouchableOpacity style={styles.gridBtn} onPress={() => router.push('/track')}>
           <View style={[styles.gridIcon, { backgroundColor: '#EAF3DE' }]} />
           <Text style={styles.gridTitle}>Track referral</Text>
-          <Text style={styles.gridSub}>1 active · On track</Text>
+          <Text style={styles.gridSub}>{specialty ? '1 active · On track' : 'No referral yet'}</Text>
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.gridBtn} onPress={() => router.push('/rights')}>
@@ -242,7 +253,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     borderRadius: 99,
     height: 7,
-    width: '50%',
   },
   progressRow: {
     flexDirection: 'row',
