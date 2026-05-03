@@ -3,7 +3,7 @@
   "dataPeriod": "February 2026",
   "source": "NHS England RTT Waiting Times Statistics",
   "sourceUrl": "https://www.england.nhs.uk/statistics/statistical-work-areas/rtt-waiting-times/",
-  "totalWaiting": 7330000,
+  "totalWaiting": 8550000,
   "nationalMedian": 13.2,
   "percentWithin18Weeks": 62,
   "over18Weeks": 2700000,
