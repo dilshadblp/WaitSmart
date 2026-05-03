@@ -23,6 +23,9 @@ export default function FindScreen() {
       <View style={styles.header}>
         <Text style={styles.title}>Find shorter wait</Text>
         <Text style={styles.subtitle}>Exercise your legal right · Any NHS trust in England</Text>
+        <Text style={{ fontSize: 11, color: '#EF9F27', paddingHorizontal: 20, marginTop: 4 }}>
+          ⚠ Data: NHS England {DATA_SOURCE.period} · Verify with your GP before switching
+        </Text>
       </View>
 
       {/* SPECIALTY PILLS */}
