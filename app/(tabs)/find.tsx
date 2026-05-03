@@ -1,13 +1,13 @@
 import { useState } from 'react';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { DATA_SOURCE, NHS_RTT_DATA, SPECIALTY_NAMES } from '../../constants/nhsData';
 
 
 
 function getStatus(weeks: number) {
-  if (weeks <= 10) return { label: 'Short wait',  bg: '#EAF3DE', color: '#3B6D11' };
-  if (weeks <= 18) return { label: 'Moderate',    bg: '#FAEEDA', color: '#854F0B' };
-  return             { label: 'Long wait',   bg: '#FCEBEB', color: '#A32D2D' };
+  if (weeks <= 10) return { label: 'Short wait', bg: '#EAF3DE', color: '#3B6D11' };
+  if (weeks <= 18) return { label: 'Moderate', bg: '#FAEEDA', color: '#854F0B' };
+  return { label: 'Long wait', bg: '#FCEBEB', color: '#A32D2D' };
 }
 
 export default function FindScreen() {
@@ -76,7 +76,19 @@ export default function FindScreen() {
                   <Text style={[styles.statusText, { color: status.color }]}>{status.label}</Text>
                 </View>
                 {isTop && (
-                  <TouchableOpacity style={styles.switchBtn}>
+                  <TouchableOpacity
+                    style={styles.switchBtn}
+                    onPress={() => {
+                      Alert.alert(
+                        'Switch to ' + h.name + '?',
+                        'This will notify your GP to update your referral to ' + h.name + '. They will contact you within 5 working days to confirm.',
+                        [
+                          { text: 'Cancel', style: 'cancel' },
+                          { text: 'Yes, switch trust', onPress: () => Alert.alert('✓ Request sent', 'Your GP has been notified. You will receive confirmation within 5 working days.') }
+                        ]
+                      );
+                    }}
+                  >
                     <Text style={styles.switchBtnText}>Switch to this trust ›</Text>
                   </TouchableOpacity>
                 )}

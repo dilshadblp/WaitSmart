@@ -8,6 +8,8 @@ export default function HomeScreen() {
   const [specialty, setSpecialty] = useState('');
   const [hospital, setHospital] = useState('');
   const [referralDate, setReferralDate] = useState('');
+  const [nhsStats, setNhsStats] = useState<any>(null);
+  const [statsLoading, setStatsLoading] = useState(true);
 
   function getGreeting() {
     const hour = new Date().getHours();
@@ -15,9 +17,24 @@ export default function HomeScreen() {
     if (hour < 17) return 'Good afternoon';
     return 'Good evening';
   }
+  async function fetchLiveStats() {
+    try {
+      setStatsLoading(true);
+      const response = await fetch(
+        'https://raw.githubusercontent.com/dilshadblp/WaitSmart/main/nhs-live-stats.json'
+      );
+      const data = await response.json();
+      setNhsStats(data);
+    } catch (e) {
+      // No internet — stats stay null
+    } finally {
+      setStatsLoading(false);
+    }
+  }
 
   useEffect(() => {
     loadUserData();
+    fetchLiveStats();
   }, []);
 
   async function loadUserData() {
@@ -100,23 +117,47 @@ export default function HomeScreen() {
       </View>
       {/* NHS STATS BOX */}
       <View style={styles.statsCard}>
-        <Text style={styles.statsLabel}>NHS ENGLAND · LIVE SNAPSHOT</Text>
-        <View style={styles.statsRow}>
-          <View style={styles.statItem}>
-            <Text style={styles.statNumber}>7.6M</Text>
-            <Text style={styles.statSub}>waiting</Text>
+        <Text style={styles.statsLabel}>
+          NHS ENGLAND · {nhsStats ? nhsStats.dataPeriod.toUpperCase() : 'LIVE DATA'}
+        </Text>
+
+        {statsLoading ? (
+          <View style={styles.statsRow}>
+            <Text style={{ color: '#8E8E93', fontSize: 12, textAlign: 'center', flex: 1 }}>
+              Loading latest NHS data...
+            </Text>
           </View>
-          <View style={styles.statDivider} />
-          <View style={styles.statItem}>
-            <Text style={[styles.statNumber, { color: '#A32D2D' }]}>41%</Text>
-            <Text style={styles.statSub}>over 18wk</Text>
+        ) : nhsStats ? (
+          <View style={styles.statsRow}>
+            <View style={styles.statItem}>
+              <Text style={styles.statNumber}>
+                {(nhsStats.totalWaiting / 1000000).toFixed(1)}M
+              </Text>
+              <Text style={styles.statSub}>waiting</Text>
+            </View>
+            <View style={styles.statDivider} />
+            <View style={styles.statItem}>
+              <Text style={[styles.statNumber, { color: '#A32D2D' }]}>
+                {100 - nhsStats.percentWithin18Weeks}%
+              </Text>
+              <Text style={styles.statSub}>over 18wk</Text>
+            </View>
+            <View style={styles.statDivider} />
+            <View style={styles.statItem}>
+              <Text style={[styles.statNumber, { color: '#3B6D11' }]}>
+                {nhsStats.percentWithin18Weeks}%
+              </Text>
+              <Text style={styles.statSub}>on target</Text>
+            </View>
           </View>
-          <View style={styles.statDivider} />
-          <View style={styles.statItem}>
-            <Text style={[styles.statNumber, { color: '#3B6D11' }]}>59%</Text>
-            <Text style={styles.statSub}>on target</Text>
+        ) : (
+          <View style={styles.statsRow}>
+            <Text style={{ color: '#8E8E93', fontSize: 12, textAlign: 'center', flex: 1 }}>
+              Connect to internet to see live NHS stats
+            </Text>
           </View>
-        </View>
+        )}
+
         <TouchableOpacity style={styles.statsBtn} onPress={() => router.push('/rights')}>
           <Text style={styles.statsBtnText}>Your right to choose a faster trust ›</Text>
         </TouchableOpacity>
