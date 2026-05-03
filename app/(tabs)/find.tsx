@@ -23,7 +23,7 @@ export default function FindScreen() {
       <View style={styles.header}>
         <Text style={styles.title}>Find shorter wait</Text>
         <Text style={styles.subtitle}>Exercise your legal right · Any NHS trust in England</Text>
-        <Text style={{ fontSize: 11, color: '#EF9F27', paddingHorizontal: 20, marginTop: 4 }}>
+        <Text style={{ fontSize: 11, color: '#EF9F27', marginTop: 4 }}>
           ⚠ Data: NHS England {DATA_SOURCE.period} · Verify with your GP before switching
         </Text>
       </View>
@@ -67,7 +67,9 @@ export default function FindScreen() {
               <View style={styles.hospitalRow}>
                 <View style={{ flex: 1 }}>
                   <Text style={styles.hospitalName}>{h.name}</Text>
-                  <Text style={styles.hospitalRegion}>{h.region}</Text>
+                  <Text style={styles.hospitalRegion}>
+                    {h.region} · {h.totalWaiting.toLocaleString()} waiting
+                  </Text>
                 </View>
                 <Text style={[styles.weeks, isTop && { color: '#005EB8' }]}>
                   {h.medianWeeks}<Text style={styles.weeksLabel}>w</Text>
@@ -78,23 +80,21 @@ export default function FindScreen() {
                 <View style={[styles.statusBadge, { backgroundColor: status.bg }]}>
                   <Text style={[styles.statusText, { color: status.color }]}>{status.label}</Text>
                 </View>
-                {isTop && (
-                  <TouchableOpacity
-                    style={styles.switchBtn}
-                    onPress={() => {
-                      Alert.alert(
-                        'Switch to ' + h.name + '?',
-                        'This will notify your GP to update your referral to ' + h.name + '. They will contact you within 5 working days to confirm.',
-                        [
-                          { text: 'Cancel', style: 'cancel' },
-                          { text: 'Yes, switch trust', onPress: () => Alert.alert('✓ Request sent', 'Your GP has been notified. You will receive confirmation within 5 working days.') }
-                        ]
-                      );
-                    }}
-                  >
-                    <Text style={styles.switchBtnText}>Switch to this trust ›</Text>
-                  </TouchableOpacity>
-                )}
+                <TouchableOpacity
+                  style={styles.switchBtn}
+                  onPress={() => {
+                    Alert.alert(
+                      'Switch to ' + h.name + '?',
+                      'This will notify your GP to update your referral to ' + h.name + '. They will contact you within 5 working days to confirm.',
+                      [
+                        { text: 'Cancel', style: 'cancel' },
+                        { text: 'Yes, switch trust', onPress: () => Alert.alert('✓ Request sent', 'Your GP has been notified. You will receive confirmation within 5 working days.') }
+                      ]
+                    );
+                  }}
+                >
+                  <Text style={styles.switchBtnText}>{isTop ? 'Switch to this trust ›' : 'Switch ›'}</Text>
+                </TouchableOpacity>
               </View>
 
             </View>
