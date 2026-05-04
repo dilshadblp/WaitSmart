@@ -1,12 +1,14 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { router } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { router, useFocusEffect } from 'expo-router';
+import { useCallback, useEffect, useState } from 'react';
 import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { CONFIG } from '../../constants/config';
 
 
 
 export default function HomeScreen() {
+  const insets = useSafeAreaInsets();
   const [userName, setUserName] = useState('');
   const [specialty, setSpecialty] = useState('');
   const [hospital, setHospital] = useState('');
@@ -37,7 +39,7 @@ export default function HomeScreen() {
     return 'Good evening';
   }
   function getProgressWidth(): `${number}%` {
-    if (!referralDate) return '10%';
+    if (!referralDate) return '0%';
     const referred = parseDate(referralDate);
     const now = new Date();
     const weeksWaited = Math.ceil(
@@ -60,9 +62,14 @@ export default function HomeScreen() {
   }
 
   useEffect(() => {
-    loadUserData();
     fetchLiveStats();
   }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      loadUserData();
+    }, [])
+  );
 
   async function loadUserData() {
     const name = await AsyncStorage.getItem('user_name');
@@ -76,7 +83,7 @@ export default function HomeScreen() {
   }
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView style={styles.container} contentContainerStyle={{ paddingTop: insets.top + 16 }}>
 
       {/* TOP HEADER */}
       <View style={styles.header}>
@@ -84,16 +91,20 @@ export default function HomeScreen() {
           <Text style={styles.greeting}>{getGreeting()}</Text>
           <Text style={styles.name}>{userName || 'Welcome'}</Text>
         </View>
-        <View style={styles.avatar}>
+        <TouchableOpacity style={styles.avatar} onPress={() => router.push('/profile')}>
           <Text style={styles.avatarText}>{userName ? userName[0].toUpperCase() : 'W'}</Text>
-        </View>
+        </TouchableOpacity>
       </View>
 
       {/* BLUE REFERRAL CARD */}
       <View style={styles.referralCard}>
         <Text style={styles.referralLabel}>YOUR ACTIVE REFERRAL</Text>
         <Text style={styles.referralTitle}>{specialty || 'No referral yet'}</Text>
-        <Text style={styles.referralSub}>{referralDate} · {hospital}</Text>
+        {specialty ? (
+          <Text style={styles.referralSub}>{referralDate} · {hospital}</Text>
+        ) : (
+          <Text style={styles.referralSub}>Add your referral details in Profile</Text>
+        )}
 
         {/* Progress bar */}
         <View style={styles.progressBg}>
@@ -101,10 +112,10 @@ export default function HomeScreen() {
         </View>
         <View style={styles.progressRow}>
           <Text style={styles.progressText}>
-            {referralDate ? `Week ${Math.ceil((new Date().getTime() - parseDate(referralDate).getTime()) / (1000 * 60 * 60 * 24 * 7))} of 18` : 'Referral in progress'}
+            {specialty && referralDate ? `Week ${Math.ceil((new Date().getTime() - parseDate(referralDate).getTime()) / (1000 * 60 * 60 * 24 * 7))} of 18` : ''}
           </Text>
           <Text style={styles.progressText}>
-            {referralDate ? `Due: ${new Date(parseDate(referralDate).getTime() + 18 * 7 * 24 * 60 * 60 * 1000).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}` : '18 week target'}
+            {specialty && referralDate ? `Due: ${new Date(parseDate(referralDate).getTime() + 18 * 7 * 24 * 60 * 60 * 1000).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}` : ''}
           </Text>
         </View>
       </View>
@@ -208,7 +219,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#F2F2F7',
-    paddingTop: 60,
   },
 
   // Header

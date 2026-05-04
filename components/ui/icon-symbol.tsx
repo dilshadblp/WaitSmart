@@ -22,6 +22,7 @@ const MAPPING = {
   'magnifyingglass': 'search',
   'track': 'timeline',
   'rights': 'gavel',
+  'profile': 'person',
   
 } as IconMapping;
 

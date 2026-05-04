@@ -12,12 +12,9 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
+import { SPECIALTY_NAMES } from '../constants/nhsData';
 
-const SPECIALTIES = [
-    'Cardiology', 'Orthopaedics', 'Eye', 'Dermatology',
-    'ENT', 'Urology', 'Neurology', 'Gastroenterology',
-    'Rheumatology', 'General Surgery', 'Other',
-];
+
 
 export default function OnboardingScreen() {
     const [name, setName] = useState('');
@@ -31,9 +28,9 @@ export default function OnboardingScreen() {
     async function handleFinish() {
         if (!name.trim()) return;
         await AsyncStorage.setItem('user_name', name.trim());
-        await AsyncStorage.setItem('user_specialty', specialty || 'General');
-        await AsyncStorage.setItem('user_hospital', hospital.trim() || 'Your NHS Trust');
-        await AsyncStorage.setItem('user_referral_date', referralDate.trim() || 'Recent');
+        await AsyncStorage.setItem('user_specialty', specialty || '');
+        await AsyncStorage.setItem('user_hospital', hospital.trim() || '');
+        await AsyncStorage.setItem('user_referral_date', referralDate.trim() || '');
         await AsyncStorage.setItem('onboarding_complete', 'true');
         router.replace('/(tabs)');
     }
@@ -68,7 +65,7 @@ export default function OnboardingScreen() {
                         <Text style={styles.cardSub}>So we can personalise your dashboard</Text>
                         <TextInput
                             style={styles.input}
-                            placeholder="e.g. Dilshad"
+                            placeholder="Enter your first name"
                             placeholderTextColor="#C7C7CC"
                             value={name}
                             onChangeText={setName}
@@ -90,7 +87,7 @@ export default function OnboardingScreen() {
                         <Text style={styles.cardTitle}>Do you have an active referral?</Text>
                         <Text style={styles.cardSub}>Select your specialty — or skip if you don't have one yet</Text>
                         <View style={styles.pillGrid}>
-                            {SPECIALTIES.map(s => (
+                            {SPECIALTY_NAMES.map(s => (
                                 <TouchableOpacity
                                     key={s}
                                     style={[styles.pill, specialty === s && styles.pillActive]}
@@ -113,7 +110,7 @@ export default function OnboardingScreen() {
                         <Text style={styles.cardSub}>We'll track your wait and find faster alternatives</Text>
                         <TextInput
                             style={styles.input}
-                            placeholder="e.g. Royal Stoke Hospital"
+                            placeholder="Enter your hospital name"
                             placeholderTextColor="#C7C7CC"
                             value={hospital}
                             onChangeText={setHospital}

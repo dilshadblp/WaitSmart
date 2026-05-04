@@ -1,4 +1,5 @@
 import { Linking, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const RIGHTS = [
   {
@@ -44,8 +45,9 @@ const RIGHTS = [
 ];
 
 export default function RightsScreen() {
+  const insets = useSafeAreaInsets();
   return (
-    <ScrollView style={styles.container}>
+     <ScrollView style={styles.container} contentContainerStyle={{ paddingTop: insets.top + 16 }}>
 
       {/* TITLE */}
       <View style={styles.header}>
@@ -107,7 +109,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#F2F2F7',
-    paddingTop: 60,
   },
 
   header: {

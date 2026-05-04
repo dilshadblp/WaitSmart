@@ -1,5 +1,8 @@
-import { useState } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useFocusEffect } from 'expo-router';
+import { useCallback, useRef, useState } from 'react';
 import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { DATA_SOURCE, NHS_RTT_DATA, SPECIALTY_NAMES } from '../../constants/nhsData';
 
 
@@ -11,13 +14,48 @@ function getStatus(weeks: number) {
 }
 
 export default function FindScreen() {
+  const insets = useSafeAreaInsets();
   const [selected, setSelected] = useState(0);
+  const scrollRef = useRef<any>(null);
+  const pillPositions = useRef<number[]>([]);
+
+
+  useFocusEffect(
+    useCallback(() => {
+      async function autoSelectSpecialty() {
+        const userSpecialty = await AsyncStorage.getItem('user_specialty');
+        if (userSpecialty && userSpecialty !== '') {
+          const index = SPECIALTY_NAMES.findIndex(
+            s => s.toLowerCase() === userSpecialty.toLowerCase()
+          );
+          if (index !== -1) {
+            setSelected(index);
+            setTimeout(() => {
+              const x = pillPositions.current[index] ?? 0;
+              scrollRef.current?.scrollTo({
+                x: Math.max(0, x - 20),
+                animated: true,
+              });
+            }, 300);
+          } else {
+            setSelected(0);
+            scrollRef.current?.scrollTo({ x: 0, animated: true });
+          }
+        } else {
+          setSelected(0);
+          scrollRef.current?.scrollTo({ x: 0, animated: true });
+        }
+      }
+      autoSelectSpecialty();
+    }, [])
+  );
+
   const currentSpecialty = SPECIALTY_NAMES[selected];
   const specialtyData = NHS_RTT_DATA[currentSpecialty];
   const HOSPITALS = specialtyData?.hospitals || [];
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView style={styles.container} contentContainerStyle={{ paddingTop: insets.top + 16 }}>
 
       {/* TITLE */}
       <View style={styles.header}>
@@ -26,15 +64,32 @@ export default function FindScreen() {
         <Text style={{ fontSize: 11, color: '#EF9F27', marginTop: 4 }}>
           ⚠ Data: NHS England {DATA_SOURCE.period} · Verify with your GP before switching
         </Text>
+        {!currentSpecialty && (
+          <View style={{ backgroundColor: '#E6F1FB', borderRadius: 10, padding: 10, marginTop: 8 }}>
+            <Text style={{ fontSize: 12, color: '#185FA5' }}>
+              💡 Tip: Add your specialty in Profile to auto-select your hospitals
+            </Text>
+          </View>
+        )}
       </View>
 
       {/* SPECIALTY PILLS */}
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.pillRow}>
+      <ScrollView ref={scrollRef} horizontal showsHorizontalScrollIndicator={false} style={styles.pillRow}>
         {SPECIALTY_NAMES.map((s, i) => (
           <TouchableOpacity
             key={s}
             style={[styles.pill, i === selected && styles.pillActive]}
-            onPress={() => setSelected(i)}
+            onPress={() => {
+              setSelected(i);
+              const x = pillPositions.current[i] ?? 0;
+              scrollRef.current?.scrollTo({
+                x: Math.max(0, x - 20),
+                animated: true,
+              });
+            }}
+            onLayout={(e) => {
+              pillPositions.current[i] = e.nativeEvent.layout.x;
+            }}
           >
             <Text style={[styles.pillText, i === selected && styles.pillTextActive]}>{s}</Text>
           </TouchableOpacity>
@@ -111,7 +166,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#F2F2F7',
-    paddingTop: 60,
   },
 
   header: {
