@@ -3,16 +3,16 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import {
-    Alert,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+  Alert,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { SPECIALTY_NAMES } from '../../constants/nhsData';
+import { DATA_SOURCE, SPECIALTY_NAMES } from '../../constants/nhsData';
 
 export default function ProfileScreen() {
   const [name, setName] = useState('');
@@ -191,7 +191,7 @@ export default function ProfileScreen() {
         <Text style={styles.infoText}>Your data is stored on your phone only.</Text>
         <Text style={styles.infoText}>We never share or sell your information.</Text>
         <Text style={[styles.infoText, { color: '#005EB8', marginTop: 8 }]}>
-          Data: NHS England RTT Statistics · February 2026
+          Data: NHS England RTT Statistics · {DATA_SOURCE.period}
         </Text>
       </View>
 

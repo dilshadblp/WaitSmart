@@ -76,10 +76,10 @@ export default function HomeScreen() {
     const spec = await AsyncStorage.getItem('user_specialty');
     const hosp = await AsyncStorage.getItem('user_hospital');
     const date = await AsyncStorage.getItem('user_referral_date');
-    if (name) setUserName(name);
-    if (spec) setSpecialty(spec);
-    if (hosp) setHospital(hosp);
-    if (date) setReferralDate(date);
+    setUserName(name || '');
+    setSpecialty(spec || '');
+    setHospital(hosp || '');
+    setReferralDate(date || '');
   }
 
   return (
