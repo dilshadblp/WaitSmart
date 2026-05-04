@@ -1,5 +1,8 @@
+import { router } from 'expo-router';
+import { useEffect, useState } from 'react';
 import { Linking, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { CONFIG } from '../../constants/config';
 
 const RIGHTS = [
   {
@@ -21,6 +24,7 @@ const RIGHTS = [
     cta: 'Find a faster trust →',
     ctaColor: '#005EB8',
     url: 'https://www.gov.uk/government/publications/the-nhs-choice-framework/the-nhs-choice-framework-what-choices-are-available-to-me-in-the-nhs',
+    internal: true,
   },
   {
     title: 'Second opinion',
@@ -46,13 +50,21 @@ const RIGHTS = [
 
 export default function RightsScreen() {
   const insets = useSafeAreaInsets();
+  const [totalWaiting, setTotalWaiting] = useState('7.2M');
+  useEffect(() => {
+    fetch(CONFIG.NHS_STATS_URL)
+      .then(r => r.json())
+      .then(d => setTotalWaiting((d.totalWaiting / 1000000).toFixed(1) + 'M'))
+      .catch(() => { });
+  }, []);
+
   return (
-     <ScrollView style={styles.container} contentContainerStyle={{ paddingTop: insets.top + 16 }}>
+    <ScrollView style={styles.container} contentContainerStyle={{ paddingTop: insets.top + 16 }}>
 
       {/* TITLE */}
       <View style={styles.header}>
         <Text style={styles.title}>Patient rights</Text>
-        <Text style={styles.subtitle}>Plain English · Updated for England 2025</Text>
+        <Text style={styles.subtitle}>Plain English · Updated for England {new Date().getFullYear()}</Text>
       </View>
 
       {/* RIGHTS CARDS */}
@@ -71,7 +83,7 @@ export default function RightsScreen() {
           <Text style={styles.cardBody}>{r.body}</Text>
 
           {/* CTA link */}
-          <TouchableOpacity onPress={() => Linking.openURL(r.url)}>
+          <TouchableOpacity onPress={() => r.internal ? router.push('/find') : Linking.openURL(r.url)}>
             <Text style={[styles.cta, { color: r.ctaColor }]}>{r.cta}</Text>
           </TouchableOpacity>
 
@@ -96,7 +108,7 @@ export default function RightsScreen() {
       <View style={styles.helpBox}>
         <Text style={styles.helpTitle}>Did you know?</Text>
         <Text style={styles.helpBody}>
-          Over 7.6 million people are currently on NHS waiting lists in England. Most of them don't know they can legally switch to a faster hospital. WaitSmart helps you exercise rights you already have.
+          Over {totalWaiting} people are currently on NHS waiting lists in England. Most of them don't know they can legally switch to a faster hospital. WaitSmart helps you exercise rights you already have.
         </Text>
       </View>
 
