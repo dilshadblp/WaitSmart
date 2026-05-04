@@ -14,6 +14,22 @@ export default function HomeScreen() {
   const [nhsStats, setNhsStats] = useState<any>(null);
   const [statsLoading, setStatsLoading] = useState(true);
 
+  function parseDate(dateStr: string): Date {
+    if (!dateStr) return new Date();
+    const months: Record<string, number> = {
+      january: 0, february: 1, march: 2, april: 3, may: 4, june: 5,
+      july: 6, august: 7, september: 8, october: 9, november: 10, december: 11,
+    };
+    const parts = dateStr.trim().split(/\s+/);
+    if (parts.length === 3) {
+      const mid = parts[1].toLowerCase();
+      if (months[mid] !== undefined) {
+        return new Date(parseInt(parts[2]), months[mid], parseInt(parts[0]));
+      }
+    }
+    return new Date(dateStr);
+  }
+
   function getGreeting() {
     const hour = new Date().getHours();
     if (hour < 12) return 'Good morning';
@@ -22,9 +38,9 @@ export default function HomeScreen() {
   }
   function getProgressWidth(): `${number}%` {
     if (!referralDate) return '10%';
-    const referred = new Date(referralDate);
+    const referred = parseDate(referralDate);
     const now = new Date();
-    const weeksWaited = Math.floor(
+    const weeksWaited = Math.ceil(
       (now.getTime() - referred.getTime()) / (1000 * 60 * 60 * 24 * 7)
     );
     const percent = Math.min(Math.round((weeksWaited / 18) * 100), 100);
@@ -84,19 +100,28 @@ export default function HomeScreen() {
           <View style={[styles.progressFill, { width: getProgressWidth() }]} />
         </View>
         <View style={styles.progressRow}>
-          <Text style={styles.progressText}>{referralDate ? `Referred: ${referralDate}` : 'Referral in progress'}</Text>
-          <Text style={styles.progressText}>18 week target</Text>
+          <Text style={styles.progressText}>
+            {referralDate ? `Week ${Math.ceil((new Date().getTime() - parseDate(referralDate).getTime()) / (1000 * 60 * 60 * 24 * 7))} of 18` : 'Referral in progress'}
+          </Text>
+          <Text style={styles.progressText}>
+            {referralDate ? `Due: ${new Date(parseDate(referralDate).getTime() + 18 * 7 * 24 * 60 * 60 * 1000).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}` : '18 week target'}
+          </Text>
         </View>
       </View>
 
       {/* ORANGE ALERT STRIP */}
-      <TouchableOpacity style={styles.alertStrip} onPress={() => router.push('/find')}>
-        <View style={{ flex: 1 }}>
-          <Text style={styles.alertTitle}>⚠ Shorter wait found nearby</Text>
-          <Text style={styles.alertSub}>Tap to find NHS hospitals with shorter waits than your current trust</Text>
-        </View>
-        <Text style={styles.alertArrow}>›</Text>
-      </TouchableOpacity>
+      {/* ORANGE ALERT STRIP — only shows if user has a referral */}
+      {specialty && (
+        <TouchableOpacity style={styles.alertStrip} onPress={() => router.push('/find')}>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.alertTitle}>⚠ Shorter wait found nearby</Text>
+            <Text style={styles.alertSub}>
+              Faster {specialty} appointments available — tap to compare all NHS trusts
+            </Text>
+          </View>
+          <Text style={styles.alertArrow}>›</Text>
+        </TouchableOpacity>
+      )}
 
       {/* 4 ACTION BUTTONS */}
       <View style={styles.grid}>
@@ -110,13 +135,13 @@ export default function HomeScreen() {
         <TouchableOpacity style={styles.gridBtn} onPress={() => router.push('/track')}>
           <View style={[styles.gridIcon, { backgroundColor: '#EAF3DE' }]} />
           <Text style={styles.gridTitle}>Track referral</Text>
-          <Text style={styles.gridSub}>{specialty ? '1 active · On track' : 'No referral yet'}</Text>
+          <Text style={styles.gridSub}>{specialty ? `${specialty} · Active` : 'No referral yet'}</Text>
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.gridBtn} onPress={() => router.push('/rights')}>
           <View style={[styles.gridIcon, { backgroundColor: '#FAEEDA' }]} />
           <Text style={styles.gridTitle}>Know your rights</Text>
-          <Text style={styles.gridSub}>Patient guide 2025</Text>
+          <Text style={styles.gridSub}>Patient guide {new Date().getFullYear()}</Text>
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.gridBtn} onPress={() => router.push('/find')}>
