@@ -1,7 +1,9 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { router } from 'expo-router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { CONFIG } from '../constants/config';
+import { DATA_SOURCE, SPECIALTY_NAMES } from '../constants/nhsData';
 import {
     KeyboardAvoidingView,
     Platform,
@@ -12,12 +14,21 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
-import { SPECIALTY_NAMES } from '../constants/nhsData';
 
 
 
 export default function OnboardingScreen() {
     const [name, setName] = useState('');
+    const [totalWaiting, setTotalWaiting] = useState(
+        (DATA_SOURCE.totalWaiting / 1000000).toFixed(1) + 'M'
+    );
+
+    useEffect(() => {
+        fetch(CONFIG.NHS_STATS_URL)
+            .then(r => r.json())
+            .then(d => setTotalWaiting((d.totalWaiting / 1000000).toFixed(1) + 'M'))
+            .catch(() => {});
+    }, []);
     const [specialty, setSpecialty] = useState('');
     const [hospital, setHospital] = useState('');
     const [referralDate, setReferralDate] = useState('');
@@ -165,9 +176,9 @@ export default function OnboardingScreen() {
                 {/* STATS */}
                 <View style={styles.statsRow}>
                     {[
-                        { n: '7.2M', l: 'NHS patients waiting' },
-                        { n: 'Free', l: 'Always free to use' },
-                        { n: '2012', l: 'Your right to choose' },
+                        { n: totalWaiting, l: 'NHS patients waiting' },
+                        { n: CONFIG.APP_PRICE, l: 'Always free to use' },
+                        { n: CONFIG.NHS_CHOICE_YEAR, l: 'Your right to choose' },
                     ].map(s => (
                         <View key={s.l} style={styles.statItem}>
                             <Text style={styles.statNum}>{s.n}</Text>

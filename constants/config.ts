@@ -12,4 +12,7 @@ export const CONFIG = {
 
   // NHS data source
   NHS_DATA_SOURCE: 'https://www.england.nhs.uk/statistics/statistical-work-areas/rtt-waiting-times/',
+
+  APP_PRICE: 'Free',
+  NHS_CHOICE_YEAR: '2012',
 };
