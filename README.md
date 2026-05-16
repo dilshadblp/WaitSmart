@@ -1,50 +1,45 @@
-# Welcome to your Expo app 👋
+# WaitSmart 🏥
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+**Your NHS, faster.**
 
-## Get started
+An independent mobile app helping UK patients navigate NHS waiting lists, 
+track their referrals, and exercise their legal right to choose a faster hospital.
 
-1. Install dependencies
+## What it does
 
-   ```bash
-   npm install
-   ```
+- 🔍 **Find shorter waits** — Compare NHS trust waiting times by specialty across England
+- 📦 **Track your referral** — Like tracking a parcel, but for your health
+- ⚖️ **Know your rights** — Plain English patient rights guide with real NHS links
+- 👤 **Personalised** — Your name, your specialty, your hospital
 
-2. Start the app
+## Built with
 
-   ```bash
-   npx expo start
-   ```
+- React Native (Expo)
+- TypeScript
+- AsyncStorage
+- NHS England RTT Published Statistics
 
-In the output, you'll find options to open the app in a
+## Data source
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+NHS England Referral to Treatment (RTT) Waiting Times Statistics  
+https://www.england.nhs.uk/statistics/statistical-work-areas/rtt-waiting-times/
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+## Disclaimer
 
-## Get a fresh project
+WaitSmart is an independent app and is not affiliated with or endorsed 
+by NHS England or the National Health Service. Data is sourced from 
+publicly available NHS England statistics. This app provides information 
+only and is not a substitute for medical advice. Always verify with your 
+GP before making any decisions about your care.
 
-When you're ready, run:
+## Developer
 
-```bash
-npm run reset-project
-```
+Built by Dilshad Ahmad — Stoke-on-Trent, England  
+Health Tech · React Native · UK NHS Patient Navigation
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
 
-## Learn more
+## License
 
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+© 2026 Dilshad Ahmad. All rights reserved.  
+WaitSmart is a proprietary application. The source code is shared 
+publicly for portfolio.
