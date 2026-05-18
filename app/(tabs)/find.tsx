@@ -16,9 +16,9 @@ function getStatus(weeks: number) {
 export default function FindScreen() {
   const insets = useSafeAreaInsets();
   const [selected, setSelected] = useState(0);
+  const [selectedRegion, setSelectedRegion] = useState('All');
   const scrollRef = useRef<any>(null);
   const pillPositions = useRef<number[]>([]);
-
 
   useFocusEffect(
     useCallback(() => {
@@ -30,6 +30,7 @@ export default function FindScreen() {
           );
           if (index !== -1) {
             setSelected(index);
+            setSelectedRegion('All');
             setTimeout(() => {
               const x = pillPositions.current[index] ?? 0;
               scrollRef.current?.scrollTo({
@@ -39,10 +40,12 @@ export default function FindScreen() {
             }, 300);
           } else {
             setSelected(0);
+            setSelectedRegion('All');
             scrollRef.current?.scrollTo({ x: 0, animated: true });
           }
         } else {
           setSelected(0);
+          setSelectedRegion('All');
           scrollRef.current?.scrollTo({ x: 0, animated: true });
         }
       }
@@ -52,7 +55,25 @@ export default function FindScreen() {
 
   const currentSpecialty = SPECIALTY_NAMES[selected];
   const specialtyData = NHS_RTT_DATA[currentSpecialty];
-  const HOSPITALS = specialtyData?.hospitals || [];
+  const ALL_HOSPITALS = specialtyData?.hospitals || [];
+
+  // Build unique region list from current specialty's hospitals
+  const regions = ['All', ...Array.from(new Set(ALL_HOSPITALS.map(h => h.region))).sort()];
+
+  // Apply region filter
+  const HOSPITALS = selectedRegion === 'All'
+    ? ALL_HOSPITALS
+    : ALL_HOSPITALS.filter(h => h.region === selectedRegion);
+
+  function handleSpecialtyChange(index: number) {
+    setSelected(index);
+    setSelectedRegion('All'); // reset region when specialty changes
+    const x = pillPositions.current[index] ?? 0;
+    scrollRef.current?.scrollTo({
+      x: Math.max(0, x - 20),
+      animated: true,
+    });
+  }
 
   return (
     <ScrollView style={styles.container} contentContainerStyle={{ paddingTop: insets.top + 16 }}>
@@ -74,19 +95,17 @@ export default function FindScreen() {
       </View>
 
       {/* SPECIALTY PILLS */}
-      <ScrollView ref={scrollRef} horizontal showsHorizontalScrollIndicator={false} style={styles.pillRow}>
+      <ScrollView
+        ref={scrollRef}
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        style={styles.pillRow}
+      >
         {SPECIALTY_NAMES.map((s, i) => (
           <TouchableOpacity
             key={s}
             style={[styles.pill, i === selected && styles.pillActive]}
-            onPress={() => {
-              setSelected(i);
-              const x = pillPositions.current[i] ?? 0;
-              scrollRef.current?.scrollTo({
-                x: Math.max(0, x - 20),
-                animated: true,
-              });
-            }}
+            onPress={() => handleSpecialtyChange(i)}
             onLayout={(e) => {
               pillPositions.current[i] = e.nativeEvent.layout.x;
             }}
@@ -96,13 +115,50 @@ export default function FindScreen() {
         ))}
       </ScrollView>
 
+      {/* REGION FILTER */}
+      <View style={styles.regionWrapper}>
+        <Text style={styles.regionLabel}>FILTER BY REGION</Text>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.regionRow}>
+          {regions.map(region => (
+            <TouchableOpacity
+              key={region}
+              style={[styles.regionPill, selectedRegion === region && styles.regionPillActive]}
+              onPress={() => setSelectedRegion(region)}
+            >
+              <Text style={[styles.regionPillText, selectedRegion === region && styles.regionPillTextActive]}>
+                {region}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
+      </View>
+
       {/* INFO ROW */}
       <View style={styles.infoRow}>
-        <Text style={styles.infoText}>{currentSpecialty} · NHS England data {DATA_SOURCE.period}</Text>
+        <Text style={styles.infoText}>
+          {currentSpecialty} · {HOSPITALS.length} trust{HOSPITALS.length !== 1 ? 's' : ''}
+          {selectedRegion !== 'All' ? ` in ${selectedRegion}` : ' across England'}
+        </Text>
         <View style={styles.nhsBadge}>
           <Text style={styles.nhsBadgeText}>NHS</Text>
         </View>
       </View>
+
+      {/* EMPTY STATE — no hospitals in selected region */}
+      {HOSPITALS.length === 0 && (
+        <View style={styles.emptyState}>
+          <Text style={styles.emptyTitle}>No trusts found</Text>
+          <Text style={styles.emptyText}>
+            No {currentSpecialty} data available for {selectedRegion}.
+          </Text>
+          <TouchableOpacity
+            style={styles.emptyBtn}
+            onPress={() => setSelectedRegion('All')}
+          >
+            <Text style={styles.emptyBtnText}>Show all regions</Text>
+          </TouchableOpacity>
+        </View>
+      )}
 
       {/* HOSPITAL LIST */}
       <View style={styles.listContainer}>
@@ -115,7 +171,9 @@ export default function FindScreen() {
               {/* Top badge for best result */}
               {isTop && (
                 <View style={styles.topBadge}>
-                  <Text style={styles.topBadgeText}>SHORTEST WAIT NEARBY</Text>
+                  <Text style={styles.topBadgeText}>
+                    {selectedRegion === 'All' ? 'SHORTEST WAIT NEARBY' : `SHORTEST IN ${selectedRegion.toUpperCase()}`}
+                  </Text>
                 </View>
               )}
 
@@ -210,6 +268,43 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
 
+  // Region filter
+  regionWrapper: {
+    paddingHorizontal: 20,
+    marginBottom: 12,
+  },
+  regionLabel: {
+    fontSize: 10,
+    color: '#8E8E93',
+    fontWeight: '500',
+    letterSpacing: 0.8,
+    marginBottom: 8,
+  },
+  regionRow: {
+    flexDirection: 'row',
+  },
+  regionPill: {
+    paddingHorizontal: 14,
+    paddingVertical: 6,
+    borderRadius: 99,
+    borderWidth: 0.5,
+    borderColor: '#D1D1D6',
+    backgroundColor: '#F2F2F7',
+    marginRight: 8,
+  },
+  regionPillActive: {
+    backgroundColor: '#1C1C1E',
+    borderColor: '#1C1C1E',
+  },
+  regionPillText: {
+    fontSize: 12,
+    color: '#3C3C43',
+  },
+  regionPillTextActive: {
+    color: 'white',
+    fontWeight: '500',
+  },
+
   // Info row
   infoRow: {
     flexDirection: 'row',
@@ -221,6 +316,7 @@ const styles = StyleSheet.create({
   infoText: {
     fontSize: 12,
     color: '#8E8E93',
+    flex: 1,
   },
   nhsBadge: {
     backgroundColor: '#E6F1FB',
@@ -231,6 +327,41 @@ const styles = StyleSheet.create({
   nhsBadgeText: {
     fontSize: 11,
     color: '#185FA5',
+    fontWeight: '500',
+  },
+
+  // Empty state
+  emptyState: {
+    marginHorizontal: 20,
+    backgroundColor: 'white',
+    borderRadius: 14,
+    padding: 24,
+    alignItems: 'center',
+    marginBottom: 12,
+    borderWidth: 0.5,
+    borderColor: '#E5E5EA',
+  },
+  emptyTitle: {
+    fontSize: 15,
+    fontWeight: '500',
+    color: '#1C1C1E',
+    marginBottom: 6,
+  },
+  emptyText: {
+    fontSize: 13,
+    color: '#8E8E93',
+    textAlign: 'center',
+    marginBottom: 14,
+  },
+  emptyBtn: {
+    backgroundColor: '#005EB8',
+    borderRadius: 10,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+  },
+  emptyBtnText: {
+    color: 'white',
+    fontSize: 13,
     fontWeight: '500',
   },
 
