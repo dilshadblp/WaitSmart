@@ -16,6 +16,8 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import HospitalPicker from '../../components/HospitalPicker';
 import { CONFIG } from '../../constants/config';
 import { DATA_SOURCE, SPECIALTY_NAMES } from '../../constants/nhsData';
+import { cancelAllNotifications } from '../../constants/notifications';
+
 
 export default function ProfileScreen() {
   const [name, setName] = useState('');
@@ -61,6 +63,7 @@ export default function ProfileScreen() {
           text: 'Reset', style: 'destructive',
           onPress: async () => {
             await AsyncStorage.clear();
+            await cancelAllNotifications();
             router.replace('/onboarding');
           }
         }

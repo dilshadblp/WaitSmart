@@ -17,6 +17,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import HospitalPicker from '../../components/HospitalPicker';
 import { SPECIALTY_NAMES } from '../../constants/nhsData';
+import { cancelReferralNotifications, scheduleReferralNotifications } from '../../constants/notifications';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -162,6 +163,7 @@ export default function TrackScreen() {
       hospital: newHospital,
       referralDate: newReferralDate,
     };
+    await scheduleReferralNotifications(newRef); 
     const updated = [...referrals, newRef];
     await saveReferrals(updated);
     setExpandedId(newRef.id);
@@ -179,6 +181,7 @@ export default function TrackScreen() {
         {
           text: 'Remove', style: 'destructive',
           onPress: async () => {
+            await cancelReferralNotifications(id);
             const updated = referrals.filter(r => r.id !== id);
             await saveReferrals(updated);
             if (expandedId === id) setExpandedId(updated[0]?.id ?? null);
