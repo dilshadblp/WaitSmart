@@ -12,6 +12,7 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
+import HospitalPicker from '../components/HospitalPicker';
 import { CONFIG } from '../constants/config';
 import { DATA_SOURCE, SPECIALTY_NAMES } from '../constants/nhsData';
 
@@ -123,14 +124,7 @@ export default function OnboardingScreen() {
                     <View style={styles.card}>
                         <Text style={styles.cardTitle}>Which hospital referred you?</Text>
                         <Text style={styles.cardSub}>We'll track your wait and find faster alternatives</Text>
-                        <TextInput
-                            style={styles.input}
-                            placeholder="Enter your hospital name"
-                            placeholderTextColor="#C7C7CC"
-                            value={hospital}
-                            onChangeText={setHospital}
-                            autoCapitalize="words"
-                        />
+                        <HospitalPicker value={hospital} onChange={setHospital} />
                         <Text style={[styles.cardSub, { marginTop: 16, marginBottom: 8 }]}>
                             When did your GP refer you?
                         </Text>

@@ -17,12 +17,15 @@ export default function FindScreen() {
   const insets = useSafeAreaInsets();
   const [selected, setSelected] = useState(0);
   const [selectedRegion, setSelectedRegion] = useState('All');
+  const [userHospital, setUserHospital] = useState('');
   const scrollRef = useRef<any>(null);
   const pillPositions = useRef<number[]>([]);
 
   useFocusEffect(
     useCallback(() => {
       async function autoSelectSpecialty() {
+        const hosp = await AsyncStorage.getItem('user_hospital');
+        setUserHospital(hosp || '');
         const userSpecialty = await AsyncStorage.getItem('user_specialty');
         if (userSpecialty && userSpecialty !== '') {
           const index = SPECIALTY_NAMES.findIndex(
@@ -64,6 +67,13 @@ export default function FindScreen() {
   const HOSPITALS = selectedRegion === 'All'
     ? ALL_HOSPITALS
     : ALL_HOSPITALS.filter(h => h.region === selectedRegion);
+
+  // Comparison values
+  const nationalMedian = DATA_SOURCE.nationalMedian;
+  const bestAvailable = ALL_HOSPITALS.length > 0 ? ALL_HOSPITALS[0].medianWeeks : null;
+  const userHospitalData = userHospital
+    ? ALL_HOSPITALS.find(h => h.name.toLowerCase().includes(userHospital.toLowerCase()))
+    : null;
 
   function handleSpecialtyChange(index: number) {
     setSelected(index);
@@ -132,6 +142,60 @@ export default function FindScreen() {
           ))}
         </ScrollView>
       </View>
+
+      {/* COMPARISON CARD — only shows when user has a specialty */}
+      {currentSpecialty && bestAvailable !== null && (
+        <View style={styles.comparisonCard}>
+          <Text style={styles.comparisonTitle}>HOW YOUR WAIT COMPARES</Text>
+          <View style={styles.comparisonRow}>
+
+            {/* Your hospital */}
+            <View style={styles.comparisonItem}>
+              <Text style={styles.comparisonNum}>
+                {userHospitalData ? `${userHospitalData.medianWeeks}w` : '—'}
+              </Text>
+              <Text style={styles.comparisonLabel}>Your hospital</Text>
+              {userHospitalData && (
+                <Text style={styles.comparisonSub} numberOfLines={1}>{userHospitalData.name.split(' ').slice(0, 2).join(' ')}</Text>
+              )}
+              {!userHospitalData && (
+                <Text style={styles.comparisonSub}>Add in Profile</Text>
+              )}
+            </View>
+
+            <View style={styles.comparisonDivider} />
+
+            {/* National median */}
+            <View style={styles.comparisonItem}>
+              <Text style={styles.comparisonNum}>{nationalMedian}w</Text>
+              <Text style={styles.comparisonLabel}>National median</Text>
+              <Text style={styles.comparisonSub}>England avg</Text>
+            </View>
+
+            <View style={styles.comparisonDivider} />
+
+            {/* Best available */}
+            <View style={styles.comparisonItem}>
+              <Text style={[styles.comparisonNum, { color: '#3B6D11' }]}>{bestAvailable}w</Text>
+              <Text style={styles.comparisonLabel}>Best available</Text>
+              <Text style={styles.comparisonSub}>Any NHS trust</Text>
+            </View>
+
+          </View>
+
+          {/* Saving callout — only if user hospital is found and slower than best */}
+          {userHospitalData && userHospitalData.medianWeeks > bestAvailable && (
+            <View style={styles.savingStrip}>
+              <Text style={styles.savingText}>
+                💡 Switching could save you{' '}
+                <Text style={{ fontWeight: '600' }}>
+                  {userHospitalData.medianWeeks - bestAvailable} weeks
+                </Text>
+              </Text>
+            </View>
+          )}
+        </View>
+      )}
 
       {/* INFO ROW */}
       <View style={styles.infoRow}>
@@ -303,6 +367,67 @@ const styles = StyleSheet.create({
   regionPillTextActive: {
     color: 'white',
     fontWeight: '500',
+  },
+
+  // Comparison card
+  comparisonCard: {
+    backgroundColor: 'white',
+    marginHorizontal: 20,
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 12,
+    borderWidth: 0.5,
+    borderColor: '#E5E5EA',
+  },
+  comparisonTitle: {
+    fontSize: 10,
+    color: '#8E8E93',
+    fontWeight: '500',
+    letterSpacing: 0.8,
+    marginBottom: 12,
+  },
+  comparisonRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    alignItems: 'flex-start',
+  },
+  comparisonItem: {
+    alignItems: 'center',
+    flex: 1,
+  },
+  comparisonNum: {
+    fontSize: 22,
+    fontWeight: '600',
+    color: '#1C1C1E',
+    marginBottom: 3,
+  },
+  comparisonLabel: {
+    fontSize: 11,
+    color: '#3C3C43',
+    fontWeight: '500',
+    textAlign: 'center',
+    marginBottom: 2,
+  },
+  comparisonSub: {
+    fontSize: 10,
+    color: '#8E8E93',
+    textAlign: 'center',
+  },
+  comparisonDivider: {
+    width: 0.5,
+    backgroundColor: '#E5E5EA',
+    alignSelf: 'stretch',
+  },
+  savingStrip: {
+    marginTop: 12,
+    backgroundColor: '#EAF3DE',
+    borderRadius: 8,
+    padding: 10,
+    alignItems: 'center',
+  },
+  savingText: {
+    fontSize: 13,
+    color: '#3B6D11',
   },
 
   // Info row

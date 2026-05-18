@@ -13,6 +13,7 @@ import {
   View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import HospitalPicker from '../../components/HospitalPicker';
 import { CONFIG } from '../../constants/config';
 import { DATA_SOURCE, SPECIALTY_NAMES } from '../../constants/nhsData';
 
@@ -118,14 +119,7 @@ export default function ProfileScreen() {
       {/* HOSPITAL */}
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>YOUR HOSPITAL</Text>
-        <TextInput
-          style={styles.input}
-          value={hospital}
-          onChangeText={setHospital}
-          placeholder="Enter your hospital name"
-          placeholderTextColor="#C7C7CC"
-          autoCapitalize="words"
-        />
+        <HospitalPicker value={hospital} onChange={setHospital} />
       </View>
 
       {/* REFERRAL DATE */}

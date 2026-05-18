@@ -301,3 +301,6 @@ export const NHS_RTT_DATA: Record<string, SpecialtyData> = {
 };
 
 export const SPECIALTY_NAMES = Object.keys(NHS_RTT_DATA);
+export const ALL_HOSPITAL_NAMES: string[] = Array.from(
+  new Set(Object.values(NHS_RTT_DATA).flatMap(s => s.hospitals.map(h => h.name)))
+).sort();
