@@ -1,12 +1,14 @@
 import { Tabs } from 'expo-router';
 import React from 'react';
+import { useColorScheme } from 'react-native';
 
 import { HapticTab } from '@/components/haptic-tab';
 import { IconSymbol } from '@/components/ui/icon-symbol';
-import { useColorScheme } from '@/hooks/use-color-scheme';
+import { DarkColors, LightColors } from '../../constants/Colors';
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
+  const scheme = useColorScheme();
+  const C = scheme === 'dark' ? DarkColors : LightColors;
 
   return (
     <Tabs
@@ -16,8 +18,8 @@ export default function TabLayout() {
         headerShown: false,
         tabBarButton: HapticTab,
         tabBarStyle: {
-          backgroundColor: '#FFFFFF',
-          borderTopColor: '#E5E5EA',
+          backgroundColor: C.tabBar,
+          borderTopColor: C.tabBorder,
           borderTopWidth: 0.5,
           height: 85,
           paddingBottom: 28,
@@ -63,7 +65,6 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="profile" color={color} />,
         }}
       />
-
     </Tabs>
   );
 }
