@@ -1,7 +1,8 @@
+import { Feather } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router, useFocusEffect } from 'expo-router';
 import { useCallback, useEffect, useState } from 'react';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { ScrollView, Share, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { CONFIG } from '../../constants/config';
 
@@ -38,6 +39,7 @@ export default function HomeScreen() {
     if (hour < 17) return 'Good afternoon';
     return 'Good evening';
   }
+
   function getProgressWidth(): `${number}%` {
     if (!referralDate) return '0%';
     const referred = parseDate(referralDate);
@@ -48,6 +50,7 @@ export default function HomeScreen() {
     const percent = Math.min(Math.round((weeksWaited / 18) * 100), 100);
     return `${percent}%`;
   }
+
   async function fetchLiveStats() {
     try {
       setStatsLoading(true);
@@ -58,6 +61,20 @@ export default function HomeScreen() {
       // No internet — stats stay null
     } finally {
       setStatsLoading(false);
+    }
+  }
+
+  async function handleShare() {
+    try {
+      await Share.share({
+        message:
+          '7.1M NHS patients are waiting — did you know you have the right to switch to a faster hospital?\n\n' +
+          "I'm using WaitSmart to track my NHS referral and find shorter waits nearby. It's free.\n\n" +
+          'Download it on Android: https://github.com/dilshadblp/WaitSmart',
+        title: 'WaitSmart — Your NHS, faster.',
+      });
+    } catch (e) {
+      // User dismissed share sheet — do nothing
     }
   }
 
@@ -91,9 +108,16 @@ export default function HomeScreen() {
           <Text style={styles.greeting}>{getGreeting()}</Text>
           <Text style={styles.name}>{userName || 'Welcome'}</Text>
         </View>
-        <TouchableOpacity style={styles.avatar} onPress={() => router.push('/profile')}>
-          <Text style={styles.avatarText}>{userName ? userName[0].toUpperCase() : 'W'}</Text>
-        </TouchableOpacity>
+
+        {/* Share + Avatar buttons */}
+        <View style={styles.headerRight}>
+          <TouchableOpacity style={styles.shareBtn} onPress={handleShare}>
+            <Feather name="share-2" size={18} color="#005EB8" />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.avatar} onPress={() => router.push('/profile')}>
+            <Text style={styles.avatarText}>{userName ? userName[0].toUpperCase() : 'W'}</Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
       {/* BLUE REFERRAL CARD */}
@@ -120,7 +144,6 @@ export default function HomeScreen() {
         </View>
       </View>
 
-      {/* ORANGE ALERT STRIP */}
       {/* ORANGE ALERT STRIP — only shows if user has a referral */}
       {specialty && (
         <TouchableOpacity style={styles.alertStrip} onPress={() => router.push('/find')}>
@@ -162,6 +185,7 @@ export default function HomeScreen() {
         </TouchableOpacity>
 
       </View>
+
       {/* NHS STATS BOX */}
       <View style={styles.statsCard}>
         <Text style={styles.statsLabel}>
@@ -238,6 +262,21 @@ const styles = StyleSheet.create({
     fontSize: 26,
     fontWeight: '500',
     color: '#1C1C1E',
+  },
+  headerRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  shareBtn: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: 'white',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 0.5,
+    borderColor: '#E5E5EA',
   },
   avatar: {
     width: 44,

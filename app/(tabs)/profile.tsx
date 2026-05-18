@@ -188,25 +188,31 @@ export default function ProfileScreen() {
 
       {/* APP INFO */}
       <View style={styles.infoBox}>
-  <Text style={styles.infoTitle}>WaitSmart</Text>
-  <Text style={styles.infoText}>Version {CONFIG.APP_VERSION}</Text>
-  <Text style={styles.infoText}>Your data is stored on your phone only.</Text>
-  <Text style={styles.infoText}>We never share or sell your information.</Text>
-  <Text style={[styles.infoText, { color: '#005EB8', marginTop: 8 }]}>
-    Data: NHS England RTT Statistics · {DATA_SOURCE.period}
-  </Text>
-  <TouchableOpacity
-    onPress={() => Linking.openURL('https://github.com/dilshadblp/WaitSmart/blob/main/PRIVACY_POLICY.md')}
-    style={{ marginTop: 12 }}
-  >
-    <Text style={[styles.infoText, { color: '#005EB8' }]}>
-      Privacy Policy →
-    </Text>
-  </TouchableOpacity>
-  <Text style={[styles.infoText, { marginTop: 8, fontSize: 10 }]}>
-    WaitSmart is independent and not affiliated with NHS England.
-  </Text>
-</View>
+        <Text style={styles.infoTitle}>WaitSmart</Text>
+        <Text style={styles.infoText}>Version {CONFIG.APP_VERSION}</Text>
+        <Text style={styles.infoText}>Your data is stored on your phone only.</Text>
+        <Text style={styles.infoText}>We never share or sell your information.</Text>
+        <Text style={[styles.infoText, { color: '#005EB8', marginTop: 8 }]}>
+          Data: NHS England RTT Statistics · {DATA_SOURCE.period}
+        </Text>
+
+        {/* About + Privacy links */}
+        <View style={styles.infoLinks}>
+          <TouchableOpacity onPress={() => router.push('/about')}>
+            <Text style={styles.infoLink}>About WaitSmart →</Text>
+          </TouchableOpacity>
+          <Text style={styles.infoLinkDivider}>·</Text>
+          <TouchableOpacity
+            onPress={() => Linking.openURL('https://github.com/dilshadblp/WaitSmart/blob/main/PRIVACY_POLICY.md')}
+          >
+            <Text style={styles.infoLink}>Privacy Policy →</Text>
+          </TouchableOpacity>
+        </View>
+
+        <Text style={[styles.infoText, { marginTop: 8, fontSize: 10 }]}>
+          WaitSmart is independent and not affiliated with NHS England.
+        </Text>
+      </View>
 
     </ScrollView>
   );
@@ -370,5 +376,19 @@ const styles = StyleSheet.create({
     color: '#8E8E93',
     textAlign: 'center',
     marginBottom: 2,
+  },
+  infoLinks: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginTop: 12,
+  },
+  infoLink: {
+    fontSize: 12,
+    color: '#005EB8',
+  },
+  infoLinkDivider: {
+    fontSize: 12,
+    color: '#C7C7CC',
   },
 });

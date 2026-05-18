@@ -2,8 +2,6 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { CONFIG } from '../constants/config';
-import { DATA_SOURCE, SPECIALTY_NAMES } from '../constants/nhsData';
 import {
     KeyboardAvoidingView,
     Platform,
@@ -14,6 +12,8 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
+import { CONFIG } from '../constants/config';
+import { DATA_SOURCE, SPECIALTY_NAMES } from '../constants/nhsData';
 
 
 
@@ -111,6 +111,10 @@ export default function OnboardingScreen() {
                         <TouchableOpacity style={styles.btn} onPress={() => setStep(3)}>
                             <Text style={styles.btnText}>{specialty ? 'Continue →' : 'Skip →'}</Text>
                         </TouchableOpacity>
+                        {/* BACK BUTTON */}
+                        <TouchableOpacity style={styles.backBtn} onPress={() => setStep(1)}>
+                            <Text style={styles.backBtnText}>← Back</Text>
+                        </TouchableOpacity>
                     </View>
                 )}
 
@@ -162,6 +166,10 @@ export default function OnboardingScreen() {
                         )}
                         <TouchableOpacity style={styles.btn} onPress={handleFinish}>
                             <Text style={styles.btnText}>Let's go →</Text>
+                        </TouchableOpacity>
+                        {/* BACK BUTTON */}
+                        <TouchableOpacity style={styles.backBtn} onPress={() => setStep(2)}>
+                            <Text style={styles.backBtnText}>← Back</Text>
                         </TouchableOpacity>
                     </View>
                 )}
@@ -297,6 +305,17 @@ const styles = StyleSheet.create({
         color: 'white',
         fontSize: 15,
         fontWeight: '500',
+    },
+
+    // Back button
+    backBtn: {
+        alignItems: 'center',
+        marginTop: 14,
+        paddingVertical: 4,
+    },
+    backBtnText: {
+        fontSize: 14,
+        color: '#8E8E93',
     },
 
     // Specialty pills
