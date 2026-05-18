@@ -28,7 +28,7 @@ export default function OnboardingScreen() {
         fetch(CONFIG.NHS_STATS_URL)
             .then(r => r.json())
             .then(d => setTotalWaiting((d.totalWaiting / 1000000).toFixed(1) + 'M'))
-            .catch(() => {});
+            .catch(() => { });
     }, []);
     const [specialty, setSpecialty] = useState('');
     const [hospital, setHospital] = useState('');
@@ -144,6 +144,7 @@ export default function OnboardingScreen() {
                                 mode="date"
                                 display="spinner"
                                 maximumDate={new Date()}
+                                minimumDate={new Date(new Date().setFullYear(new Date().getFullYear() - 3))}
                                 onChange={(event, date) => {
                                     setShowDatePicker(false);
                                     if (date) {

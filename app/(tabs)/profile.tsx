@@ -139,6 +139,7 @@ export default function ProfileScreen() {
             mode="date"
             display="spinner"
             maximumDate={new Date()}
+            minimumDate={new Date(new Date().setFullYear(new Date().getFullYear() - 3))}
             onChange={(event, date) => {
               setShowDatePicker(false);
               if (date) {
@@ -146,7 +147,7 @@ export default function ProfileScreen() {
                 const formatted = date.toLocaleDateString('en-GB', {
                   day: 'numeric',
                   month: 'long',
-                  year: 'numeric',
+                  year: 'numeric'
                 });
                 setReferralDate(formatted);
               }
