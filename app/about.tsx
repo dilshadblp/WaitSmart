@@ -22,7 +22,8 @@ export default function AboutScreen() {
   }
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={{ paddingTop: insets.top + 16, paddingBottom: 60 }}>
+    <View style={{ flex: 1, backgroundColor: C.bg, paddingTop: insets.top }}>
+    <ScrollView style={styles.container} contentContainerStyle={{ paddingTop: 16, paddingBottom: 60 }}>
 
       <TouchableOpacity style={styles.backRow} onPress={() => router.back()}>
         <Feather name="arrow-left" size={16} color="#005EB8" />
@@ -124,6 +125,7 @@ export default function AboutScreen() {
       </Text>
 
     </ScrollView>
+    </View>
   );
 }
 

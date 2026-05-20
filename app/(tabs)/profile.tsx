@@ -61,7 +61,8 @@ export default function ProfileScreen() {
   }
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={{ paddingTop: insets.top + 16 }}>
+    <View style={{ flex: 1, backgroundColor: C.bg, paddingTop: insets.top }}>
+    <ScrollView style={styles.container} contentContainerStyle={{ paddingTop: 16 }}>
 
       <View style={styles.header}>
         <View style={styles.avatar}>
@@ -184,6 +185,7 @@ export default function ProfileScreen() {
       </View>
 
     </ScrollView>
+    </View>
   );
 }
 

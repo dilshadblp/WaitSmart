@@ -112,7 +112,8 @@ export default function TrackScreen() {
   }
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={{ paddingTop: insets.top + 16 }}>
+    <View style={{ flex: 1, backgroundColor: C.bg, paddingTop: insets.top }}>
+    <ScrollView style={styles.container} contentContainerStyle={{ paddingTop: 16 }}>
 
       <View style={styles.header}>
         <View style={{ flex: 1 }}>
@@ -288,6 +289,7 @@ export default function TrackScreen() {
       </Modal>
 
     </ScrollView>
+    </View>
   );
 }
 

@@ -17,7 +17,7 @@ export default function RightsScreen() {
     fetch(CONFIG.NHS_STATS_URL)
       .then(r => r.json())
       .then(d => setTotalWaiting((d.totalWaiting / 1000000).toFixed(1) + 'M'))
-      .catch(() => {});
+      .catch(() => { });
   }, []);
 
   const RIGHTS = [
@@ -61,49 +61,51 @@ export default function RightsScreen() {
   ];
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={{ paddingTop: insets.top + 16 }}>
+    <View style={{ flex: 1, backgroundColor: C.bg, paddingTop: insets.top }}>
+      <ScrollView style={styles.container} contentContainerStyle={{ paddingTop: 16 }}>
 
-      <View style={styles.header}>
-        <Text style={styles.title}>Patient rights</Text>
-        <Text style={styles.subtitle}>Plain English · Updated for England {new Date().getFullYear()}</Text>
-      </View>
+        <View style={styles.header}>
+          <Text style={styles.title}>Patient rights</Text>
+          <Text style={styles.subtitle}>Plain English · Updated for England {new Date().getFullYear()}</Text>
+        </View>
 
-      {RIGHTS.map(r => (
-        <View key={r.title} style={styles.card}>
-          <View style={styles.cardTop}>
-            <Text style={styles.cardTitle}>{r.title}</Text>
-            <View style={[styles.tag, { backgroundColor: r.tagBg }]}>
-              <Text style={[styles.tagText, { color: r.tagColor }]}>{r.tag}</Text>
+        {RIGHTS.map(r => (
+          <View key={r.title} style={styles.card}>
+            <View style={styles.cardTop}>
+              <Text style={styles.cardTitle}>{r.title}</Text>
+              <View style={[styles.tag, { backgroundColor: r.tagBg }]}>
+                <Text style={[styles.tagText, { color: r.tagColor }]}>{r.tag}</Text>
+              </View>
             </View>
+            <Text style={styles.cardBody}>{r.body}</Text>
+            <TouchableOpacity onPress={() => r.internal ? router.push('/find') : Linking.openURL(r.url)}>
+              <Text style={styles.cta}>{r.cta}</Text>
+            </TouchableOpacity>
           </View>
-          <Text style={styles.cardBody}>{r.body}</Text>
-          <TouchableOpacity onPress={() => r.internal ? router.push('/find') : Linking.openURL(r.url)}>
-            <Text style={styles.cta}>{r.cta}</Text>
+        ))}
+
+        <View style={styles.complaintBanner}>
+          <Text style={styles.complaintTitle}>Need to make a complaint?</Text>
+          <Text style={styles.complaintBody}>
+            We guide you step by step through NHS complaints — including PALS, NHS England escalation, and the Parliamentary Ombudsman.
+          </Text>
+          <TouchableOpacity
+            style={styles.complaintBtn}
+            onPress={() => Linking.openURL('https://www.england.nhs.uk/contact-us/feedback-and-complaints/complaint/')}
+          >
+            <Text style={styles.complaintBtnText}>Start complaint guide ›</Text>
           </TouchableOpacity>
         </View>
-      ))}
 
-      <View style={styles.complaintBanner}>
-        <Text style={styles.complaintTitle}>Need to make a complaint?</Text>
-        <Text style={styles.complaintBody}>
-          We guide you step by step through NHS complaints — including PALS, NHS England escalation, and the Parliamentary Ombudsman.
-        </Text>
-        <TouchableOpacity
-          style={styles.complaintBtn}
-          onPress={() => Linking.openURL('https://www.england.nhs.uk/contact-us/feedback-and-complaints/complaint/')}
-        >
-          <Text style={styles.complaintBtnText}>Start complaint guide ›</Text>
-        </TouchableOpacity>
-      </View>
+        <View style={styles.helpBox}>
+          <Text style={styles.helpTitle}>Did you know?</Text>
+          <Text style={styles.helpBody}>
+            Over {totalWaiting} people are currently on NHS waiting lists in England. Most of them don't know they can legally switch to a faster hospital. WaitSmart helps you exercise rights you already have.
+          </Text>
+        </View>
 
-      <View style={styles.helpBox}>
-        <Text style={styles.helpTitle}>Did you know?</Text>
-        <Text style={styles.helpBody}>
-          Over {totalWaiting} people are currently on NHS waiting lists in England. Most of them don't know they can legally switch to a faster hospital. WaitSmart helps you exercise rights you already have.
-        </Text>
-      </View>
-
-    </ScrollView>
+      </ScrollView>
+    </View>
   );
 }
 
