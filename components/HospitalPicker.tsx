@@ -28,7 +28,8 @@ export default function HospitalPicker({ value, onChange }: Props) {
         </Text>
       </TouchableOpacity>
 
-      <Modal visible={modalVisible} animationType="slide" presentationStyle="pageSheet">
+      <Modal visible={modalVisible} onRequestClose={() => setModalVisible(false)} animationType="slide"
+        presentationStyle="pageSheet">
         <View style={styles.modal}>
           <View style={styles.modalHeader}>
             <Text style={styles.modalTitle}>Select hospital</Text>
