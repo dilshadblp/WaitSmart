@@ -48,8 +48,8 @@ export async function scheduleReferralNotifications(referral: {
   const scheduledIds: string[] = [];
 
   // Week 17 — warning
-  //const week17 = new Date(referred.getTime() + 17 * 7 * 24 * 60 * 60 * 1000);
-  const week17 = new Date(Date.now() + 10 * 1000); // 10 seconds from now
+  const week17 = new Date(referred.getTime() + 17 * 7 * 24 * 60 * 60 * 1000);
+  //const week17 = new Date(Date.now() + 10 * 1000); // 10 seconds from now
   
   if (week17 > now) {
     const id = await Notifications.scheduleNotificationAsync({
@@ -65,8 +65,8 @@ export async function scheduleReferralNotifications(referral: {
   }
 
   // Week 18 — breached
-  //const week18 = new Date(referred.getTime() + 18 * 7 * 24 * 60 * 60 * 1000);
-  const week18 = new Date(Date.now() + 20 * 1000); // 20 seconds from now
+  const week18 = new Date(referred.getTime() + 18 * 7 * 24 * 60 * 60 * 1000);
+  //const week18 = new Date(Date.now() + 20 * 1000); // 20 seconds from now
   if (week18 > now) {
     const id = await Notifications.scheduleNotificationAsync({
       content: {

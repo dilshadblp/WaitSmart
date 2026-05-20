@@ -78,6 +78,7 @@ export default function TrackScreen() {
           const migrated: Referral[] = [{ id: Date.now().toString(), specialty: spec, hospital: hosp || '', referralDate: date || '' }];
           setReferrals(migrated); setExpandedId(migrated[0].id);
           await AsyncStorage.setItem('user_referrals', JSON.stringify(migrated));
+          await scheduleReferralNotifications(migrated[0]);
         }
       }
     }

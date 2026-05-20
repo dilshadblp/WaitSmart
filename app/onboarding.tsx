@@ -7,6 +7,7 @@ import HospitalPicker from '../components/HospitalPicker';
 import { AppColors, DarkColors, LightColors } from '../constants/Colors';
 import { CONFIG } from '../constants/config';
 import { DATA_SOURCE, SPECIALTY_NAMES } from '../constants/nhsData';
+import { scheduleReferralNotifications } from '../constants/notifications';
 
 export default function OnboardingScreen() {
   const scheme = useColorScheme();
@@ -26,7 +27,7 @@ export default function OnboardingScreen() {
     fetch(CONFIG.NHS_STATS_URL)
       .then(r => r.json())
       .then(d => setTotalWaiting((d.totalWaiting / 1000000).toFixed(1) + 'M'))
-      .catch(() => {});
+      .catch(() => { });
   }, []);
 
   async function handleFinish() {
@@ -36,6 +37,19 @@ export default function OnboardingScreen() {
     await AsyncStorage.setItem('user_hospital', hospital.trim() || '');
     await AsyncStorage.setItem('user_referral_date', referralDate.trim() || '');
     await AsyncStorage.setItem('onboarding_complete', 'true');
+
+    // Save referral + schedule notifications if entered during onboarding
+    if (specialty && referralDate) {
+      const referral = {
+        id: Date.now().toString(),
+        specialty,
+        hospital: hospital.trim(),
+        referralDate: referralDate.trim(),
+      };
+      await AsyncStorage.setItem('user_referrals', JSON.stringify([referral]));
+      await scheduleReferralNotifications(referral);
+    }
+
     router.replace('/(tabs)');
   }
 
