@@ -102,193 +102,195 @@ export default function TrackScreen() {
   function deleteReferral(id: string, specialty: string) {
     Alert.alert(`Remove ${specialty}?`, 'This referral will be permanently removed.', [
       { text: 'Cancel', style: 'cancel' },
-      { text: 'Remove', style: 'destructive', onPress: async () => {
-        await cancelReferralNotifications(id);
-        const updated = referrals.filter(r => r.id !== id);
-        await saveReferrals(updated);
-        if (expandedId === id) setExpandedId(updated[0]?.id ?? null);
-      }},
+      {
+        text: 'Remove', style: 'destructive', onPress: async () => {
+          await cancelReferralNotifications(id);
+          const updated = referrals.filter(r => r.id !== id);
+          await saveReferrals(updated);
+          if (expandedId === id) setExpandedId(updated[0]?.id ?? null);
+        }
+      },
     ]);
   }
 
   return (
     <View style={{ flex: 1, backgroundColor: C.bg, paddingTop: insets.top }}>
-    <ScrollView style={styles.container} contentContainerStyle={{ paddingTop: 16 }}>
+      <ScrollView style={styles.container} contentContainerStyle={{ paddingTop: 16 }}>
 
-      <View style={styles.header}>
-        <View style={{ flex: 1 }}>
-          <Text style={styles.title}>Your referrals</Text>
-          <Text style={styles.subtitle}>{referrals.length > 0 ? `${referrals.length} active · Last updated today` : 'No active referrals'}</Text>
-        </View>
-        {referrals.length < 5 && (
-          <TouchableOpacity style={styles.addBtn} onPress={openAddModal}>
-            <Feather name="plus" size={18} color="white" />
-          </TouchableOpacity>
-        )}
-      </View>
-
-      {referrals.length > 0 ? referrals.map(ref => {
-        const isExpanded = expandedId === ref.id;
-        const status = getStatus(ref.referralDate);
-        const STEPS = getSteps(ref.referralDate, ref.hospital);
-        return (
-          <View key={ref.id} style={styles.referralCard}>
-            <TouchableOpacity style={styles.cardTop} onPress={() => setExpandedId(isExpanded ? null : ref.id)} activeOpacity={0.7}>
-              <View style={{ flex: 1, marginRight: 10 }}>
-                <Text style={styles.cardTitle}>{ref.specialty}</Text>
-                <Text style={styles.cardSub}>{ref.referralDate || ref.hospital ? `${ref.referralDate}${ref.hospital ? ' · ' + ref.hospital : ''}` : 'No date or hospital set'}</Text>
-              </View>
-              <View style={styles.cardHeaderRight}>
-                <View style={[styles.statusBadge, { backgroundColor: status.bg }]}>
-                  <Text style={[styles.statusText, { color: status.color }]}>{status.text}</Text>
-                </View>
-                <Feather name={isExpanded ? 'chevron-up' : 'chevron-down'} size={16} color={C.textSecondary} style={{ marginLeft: 8 }} />
-              </View>
+        <View style={styles.header}>
+          <View style={{ flex: 1 }}>
+            <Text style={styles.title}>Your referrals</Text>
+            <Text style={styles.subtitle}>{referrals.length > 0 ? `${referrals.length} active · Last updated today` : 'No active referrals'}</Text>
+          </View>
+          {referrals.length < 5 && (
+            <TouchableOpacity style={styles.addBtn} onPress={openAddModal}>
+              <Feather name="plus" size={18} color="white" />
             </TouchableOpacity>
+          )}
+        </View>
 
-            <View style={styles.progressInfo}>
-              <Text style={styles.progressLabel}>
-                {ref.referralDate ? (getWeeksWaited(ref.referralDate) > 18 ? `Overdue by ${getWeeksWaited(ref.referralDate) - 18} weeks` : `Week ${getWeeksWaited(ref.referralDate)} of 18`) : ''}
-              </Text>
-              <Text style={styles.progressLabel}>{ref.referralDate ? `${Math.max(0, 18 - getWeeksWaited(ref.referralDate))} weeks remaining` : ''}</Text>
-            </View>
-            <View style={styles.progressBg}>
-              <View style={[styles.progressFill, { width: getProgressWidth(ref.referralDate) }]} />
-            </View>
+        {referrals.length > 0 ? referrals.map(ref => {
+          const isExpanded = expandedId === ref.id;
+          const status = getStatus(ref.referralDate);
+          const STEPS = getSteps(ref.referralDate, ref.hospital);
+          return (
+            <View key={ref.id} style={styles.referralCard}>
+              <TouchableOpacity style={styles.cardTop} onPress={() => setExpandedId(isExpanded ? null : ref.id)} activeOpacity={0.7}>
+                <View style={{ flex: 1, marginRight: 10 }}>
+                  <Text style={styles.cardTitle}>{ref.specialty}</Text>
+                  <Text style={styles.cardSub}>{ref.referralDate || ref.hospital ? `${ref.referralDate}${ref.hospital ? ' · ' + ref.hospital : ''}` : 'No date or hospital set'}</Text>
+                </View>
+                <View style={styles.cardHeaderRight}>
+                  <View style={[styles.statusBadge, { backgroundColor: status.bg }]}>
+                    <Text style={[styles.statusText, { color: status.color }]}>{status.text}</Text>
+                  </View>
+                  <Feather name={isExpanded ? 'chevron-up' : 'chevron-down'} size={16} color={C.textSecondary} style={{ marginLeft: 8 }} />
+                </View>
+              </TouchableOpacity>
 
-            {isExpanded && (
-              <>
-                <View style={styles.detailGrid}>
-                  {[
-                    { label: 'REFERRED', value: ref.referralDate || 'Unknown', color: C.textPrimary },
-                    { label: 'DEADLINE', value: ref.referralDate ? new Date(parseDate(ref.referralDate).getTime() + 18 * 7 * 24 * 60 * 60 * 1000).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Not set', color: C.textPrimary },
-                    { label: 'TRUST', value: ref.hospital || 'Your trust', color: C.textPrimary },
-                    { label: 'STATUS', value: status.text, color: status.color },
-                  ].map(d => (
-                    <View key={d.label} style={styles.detailItem}>
-                      <Text style={styles.detailLabel}>{d.label}</Text>
-                      <Text style={[styles.detailValue, { color: d.color }]}>{d.value}</Text>
+              <View style={styles.progressInfo}>
+                <Text style={styles.progressLabel}>
+                  {ref.referralDate ? (getWeeksWaited(ref.referralDate) > 18 ? `Overdue by ${getWeeksWaited(ref.referralDate) - 18} weeks` : `Week ${getWeeksWaited(ref.referralDate)} of 18`) : ''}
+                </Text>
+                <Text style={styles.progressLabel}>{ref.referralDate ? `${Math.max(0, 18 - getWeeksWaited(ref.referralDate))} weeks remaining` : ''}</Text>
+              </View>
+              <View style={styles.progressBg}>
+                <View style={[styles.progressFill, { width: getProgressWidth(ref.referralDate) }]} />
+              </View>
+
+              {isExpanded && (
+                <>
+                  <View style={styles.detailGrid}>
+                    {[
+                      { label: 'REFERRED', value: ref.referralDate || 'Unknown', color: C.textPrimary },
+                      { label: 'DEADLINE', value: ref.referralDate ? new Date(parseDate(ref.referralDate).getTime() + 18 * 7 * 24 * 60 * 60 * 1000).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Not set', color: C.textPrimary },
+                      { label: 'TRUST', value: ref.hospital || 'Your trust', color: C.textPrimary },
+                      { label: 'STATUS', value: status.text, color: status.color },
+                    ].map(d => (
+                      <View key={d.label} style={styles.detailItem}>
+                        <Text style={styles.detailLabel}>{d.label}</Text>
+                        <Text style={[styles.detailValue, { color: d.color }]}>{d.value}</Text>
+                      </View>
+                    ))}
+                  </View>
+
+                  <View style={styles.divider} />
+                  <Text style={styles.timelineHeader}>PATHWAY</Text>
+                  {STEPS.map((step, i) => (
+                    <View key={step.label} style={styles.stepRow}>
+                      <View style={styles.stepLeft}>
+                        <View style={[styles.circle, step.done ? styles.circleDone : styles.circlePending]}>
+                          {step.done && <Text style={styles.tick}>✓</Text>}
+                        </View>
+                        {i < STEPS.length - 1 && <View style={[styles.line, step.done ? styles.lineDone : styles.linePending]} />}
+                      </View>
+                      <View style={styles.stepText}>
+                        <Text style={[styles.stepLabel, !step.done && styles.stepLabelPending]}>{step.label}</Text>
+                        <Text style={styles.stepDate}>{step.date}</Text>
+                      </View>
                     </View>
                   ))}
-                </View>
 
-                <View style={styles.divider} />
-                <Text style={styles.timelineHeader}>PATHWAY</Text>
-                {STEPS.map((step, i) => (
-                  <View key={step.label} style={styles.stepRow}>
-                    <View style={styles.stepLeft}>
-                      <View style={[styles.circle, step.done ? styles.circleDone : styles.circlePending]}>
-                        {step.done && <Text style={styles.tick}>✓</Text>}
-                      </View>
-                      {i < STEPS.length - 1 && <View style={[styles.line, step.done ? styles.lineDone : styles.linePending]} />}
-                    </View>
-                    <View style={styles.stepText}>
-                      <Text style={[styles.stepLabel, !step.done && styles.stepLabelPending]}>{step.label}</Text>
-                      <Text style={styles.stepDate}>{step.date}</Text>
-                    </View>
+                  <View style={styles.cardActions}>
+                    <TouchableOpacity style={styles.chaserBtn} onPress={() => Alert.alert('Send chaser letter?', `Generate a letter to ${ref.hospital || 'your hospital'} for your ${ref.specialty} referral.`, [{ text: 'Cancel', style: 'cancel' }, { text: 'Generate letter', onPress: () => Alert.alert('✓ Letter ready', 'Copy it and send to your hospital PALS team.') }])}>
+                      <Text style={styles.chaserBtnText}>Send chaser letter ›</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.deleteBtn} onPress={() => deleteReferral(ref.id, ref.specialty)}>
+                      <Feather name="trash-2" size={14} color={C.red} />
+                    </TouchableOpacity>
                   </View>
-                ))}
 
-                <View style={styles.cardActions}>
-                  <TouchableOpacity style={styles.chaserBtn} onPress={() => Alert.alert('Send chaser letter?', `Generate a letter to ${ref.hospital || 'your hospital'} for your ${ref.specialty} referral.`, [{ text: 'Cancel', style: 'cancel' }, { text: 'Generate letter', onPress: () => Alert.alert('✓ Letter ready', 'Copy it and send to your hospital PALS team.') }])}>
-                    <Text style={styles.chaserBtnText}>Send chaser letter ›</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity style={styles.deleteBtn} onPress={() => deleteReferral(ref.id, ref.specialty)}>
-                    <Feather name="trash-2" size={14} color={C.red} />
-                  </TouchableOpacity>
-                </View>
-
-                {ref.referralDate && (
-                  <View style={[styles.successBanner, { backgroundColor: status.bg, borderLeftColor: status.color }]}>
-                    <Text style={[styles.successTitle, { color: status.color }]}>
-                      {getWeeksWaited(ref.referralDate) >= 18 ? '⚠ 18-week target breached — you have the right to switch trust' : '✓ Within 18-week legal target'}
-                    </Text>
-                    <Text style={[styles.successBody, { color: status.color }]}>
-                      {getWeeksWaited(ref.referralDate) >= 18 ? 'Your trust has breached your legal right. Tap Find to see faster alternatives immediately.' : 'Your referral is progressing on time. WaitSmart will alert you if your trust breaches your right.'}
-                    </Text>
-                  </View>
-                )}
-              </>
-            )}
-          </View>
-        );
-      }) : (
-        <View style={styles.emptyState}>
-          <Text style={styles.emptyIcon}>🏥</Text>
-          <Text style={styles.emptyTitle}>No active referrals</Text>
-          <Text style={styles.emptyBody}>When your GP refers you for treatment, add your details here to track your wait and find faster alternatives.</Text>
-          <TouchableOpacity style={styles.emptyBtn} onPress={openAddModal}>
-            <Text style={styles.emptyBtnText}>Add your first referral →</Text>
-          </TouchableOpacity>
-        </View>
-      )}
-
-      {referrals.length > 0 && referrals.length < 5 && (
-        <TouchableOpacity style={styles.addMoreBtn} onPress={openAddModal}>
-          <Feather name="plus-circle" size={15} color="#005EB8" />
-          <Text style={styles.addMoreText}>Add another referral</Text>
-        </TouchableOpacity>
-      )}
-
-      <View style={{ height: 40 }} />
-
-      {/* ADD MODAL */}
-      <Modal visible={showAddModal} animationType="slide" presentationStyle="pageSheet">
-        <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-          <ScrollView style={[styles.modal]} keyboardShouldPersistTaps="handled">
-            <View style={styles.modalHeader}>
-              <Text style={styles.modalTitle}>Add referral</Text>
-              <TouchableOpacity onPress={() => setShowAddModal(false)}>
-                <Text style={styles.modalCancel}>Cancel</Text>
-              </TouchableOpacity>
-            </View>
-
-            <View style={styles.modalSection}>
-              <Text style={styles.modalSectionTitle}>SPECIALTY</Text>
-              <Text style={styles.modalSectionSub}>Select your referral specialty</Text>
-              <View style={styles.pillGrid}>
-                {SPECIALTY_NAMES.map(s => (
-                  <TouchableOpacity key={s} style={[styles.pill, newSpecialty === s && styles.pillActive]} onPress={() => setNewSpecialty(s)}>
-                    <Text style={[styles.pillText, newSpecialty === s && styles.pillTextActive]}>{s}</Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-            </View>
-
-            <View style={styles.modalSection}>
-              <Text style={styles.modalSectionTitle}>HOSPITAL</Text>
-              <HospitalPicker value={newHospital} onChange={setNewHospital} />
-            </View>
-
-            <View style={styles.modalSection}>
-              <Text style={styles.modalSectionTitle}>REFERRAL DATE</Text>
-              <TouchableOpacity style={styles.dateInput} onPress={() => setShowDatePicker(true)}>
-                <Text style={{ color: newReferralDate ? C.textPrimary : C.textTertiary, fontSize: 15 }}>
-                  {newReferralDate || 'Tap to select date'}
-                </Text>
-              </TouchableOpacity>
-              {showDatePicker && (
-                <DateTimePicker
-                  value={selectedDate} mode="date" display="spinner"
-                  maximumDate={new Date()}
-                  minimumDate={new Date(new Date().setFullYear(new Date().getFullYear() - 3))}
-                  onChange={(event, date) => {
-                    setShowDatePicker(false);
-                    if (date) { setSelectedDate(date); setNewReferralDate(date.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })); }
-                  }}
-                />
+                  {ref.referralDate && (
+                    <View style={[styles.successBanner, { backgroundColor: status.bg, borderLeftColor: status.color }]}>
+                      <Text style={[styles.successTitle, { color: status.color }]}>
+                        {getWeeksWaited(ref.referralDate) >= 18 ? '⚠ 18-week target breached — you have the right to switch trust' : '✓ Within 18-week legal target'}
+                      </Text>
+                      <Text style={[styles.successBody, { color: status.color }]}>
+                        {getWeeksWaited(ref.referralDate) >= 18 ? 'Your trust has breached your legal right. Tap Find to see faster alternatives immediately.' : 'Your referral is progressing on time. WaitSmart will alert you if your trust breaches your right.'}
+                      </Text>
+                    </View>
+                  )}
+                </>
               )}
-              {newReferralDate ? <TouchableOpacity onPress={() => setNewReferralDate('')}><Text style={{ color: C.red, fontSize: 12, marginTop: 6 }}>Clear date</Text></TouchableOpacity> : null}
             </View>
-
-            <TouchableOpacity style={[styles.saveBtn, !newSpecialty && styles.saveBtnDisabled]} onPress={confirmAdd} disabled={!newSpecialty}>
-              <Text style={styles.saveBtnText}>Add referral</Text>
+          );
+        }) : (
+          <View style={styles.emptyState}>
+            <Text style={styles.emptyIcon}>🏥</Text>
+            <Text style={styles.emptyTitle}>No active referrals</Text>
+            <Text style={styles.emptyBody}>When your GP refers you for treatment, add your details here to track your wait and find faster alternatives.</Text>
+            <TouchableOpacity style={styles.emptyBtn} onPress={openAddModal}>
+              <Text style={styles.emptyBtnText}>Add your first referral →</Text>
             </TouchableOpacity>
-          </ScrollView>
-        </KeyboardAvoidingView>
-      </Modal>
+          </View>
+        )}
 
-    </ScrollView>
+        {referrals.length > 0 && referrals.length < 5 && (
+          <TouchableOpacity style={styles.addMoreBtn} onPress={openAddModal}>
+            <Feather name="plus-circle" size={15} color="#005EB8" />
+            <Text style={styles.addMoreText}>Add another referral</Text>
+          </TouchableOpacity>
+        )}
+
+        <View style={{ height: 40 }} />
+
+        {/* ADD MODAL */}
+        <Modal visible={showAddModal} animationType="slide" presentationStyle="pageSheet" onRequestClose={() => setShowAddModal(false)}>
+          <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
+            <ScrollView style={[styles.modal]} keyboardShouldPersistTaps="handled">
+              <View style={[styles.modalHeader, { paddingTop: insets.top + 20 }]}>
+                <Text style={styles.modalTitle}>Add referral</Text>
+                <TouchableOpacity onPress={() => setShowAddModal(false)}>
+                  <Text style={styles.modalCancel}>Cancel</Text>
+                </TouchableOpacity>
+              </View>
+
+              <View style={styles.modalSection}>
+                <Text style={styles.modalSectionTitle}>SPECIALTY</Text>
+                <Text style={styles.modalSectionSub}>Select your referral specialty</Text>
+                <View style={styles.pillGrid}>
+                  {SPECIALTY_NAMES.map(s => (
+                    <TouchableOpacity key={s} style={[styles.pill, newSpecialty === s && styles.pillActive]} onPress={() => setNewSpecialty(s)}>
+                      <Text style={[styles.pillText, newSpecialty === s && styles.pillTextActive]}>{s}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </View>
+
+              <View style={styles.modalSection}>
+                <Text style={styles.modalSectionTitle}>HOSPITAL</Text>
+                <HospitalPicker value={newHospital} onChange={setNewHospital} />
+              </View>
+
+              <View style={styles.modalSection}>
+                <Text style={styles.modalSectionTitle}>REFERRAL DATE</Text>
+                <TouchableOpacity style={styles.dateInput} onPress={() => setShowDatePicker(true)}>
+                  <Text style={{ color: newReferralDate ? C.textPrimary : C.textTertiary, fontSize: 15 }}>
+                    {newReferralDate || 'Tap to select date'}
+                  </Text>
+                </TouchableOpacity>
+                {showDatePicker && (
+                  <DateTimePicker
+                    value={selectedDate} mode="date" display="spinner"
+                    maximumDate={new Date()}
+                    minimumDate={new Date(new Date().setFullYear(new Date().getFullYear() - 3))}
+                    onChange={(event, date) => {
+                      setShowDatePicker(false);
+                      if (date) { setSelectedDate(date); setNewReferralDate(date.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })); }
+                    }}
+                  />
+                )}
+                {newReferralDate ? <TouchableOpacity onPress={() => setNewReferralDate('')}><Text style={{ color: C.red, fontSize: 12, marginTop: 6 }}>Clear date</Text></TouchableOpacity> : null}
+              </View>
+
+              <TouchableOpacity style={[styles.saveBtn, !newSpecialty && styles.saveBtnDisabled]} onPress={confirmAdd} disabled={!newSpecialty}>
+                <Text style={styles.saveBtnText}>Add referral</Text>
+              </TouchableOpacity>
+            </ScrollView>
+          </KeyboardAvoidingView>
+        </Modal>
+
+      </ScrollView>
     </View>
   );
 }

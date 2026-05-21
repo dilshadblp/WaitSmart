@@ -22,7 +22,7 @@ export default function AboutScreen() {
   }
 
   return (
-    <View style={{ flex: 1, backgroundColor: C.bg, paddingTop: insets.top }}>
+    <View style={{ flex: 1, backgroundColor: C.bg, paddingTop: insets.top, paddingBottom: insets.bottom }}>
     <ScrollView style={styles.container} contentContainerStyle={{ paddingTop: 16, paddingBottom: 60 }}>
 
       <TouchableOpacity style={styles.backRow} onPress={() => router.back()}>
