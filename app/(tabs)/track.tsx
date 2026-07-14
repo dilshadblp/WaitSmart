@@ -7,10 +7,12 @@ import { Alert, KeyboardAvoidingView, Modal, Platform, ScrollView, StyleSheet, T
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import HospitalPicker from '../../components/HospitalPicker';
 import { AppColors, DarkColors, LightColors } from '../../constants/Colors';
-import { SPECIALTY_NAMES } from '../../constants/nhsData';
+import { useNHSData } from '../../constants/liveNHSData';
 import { cancelReferralNotifications, scheduleReferralNotifications } from '../../constants/notifications';
 
-type Referral = { id: string; specialty: string; hospital: string; referralDate: string; };
+type Referral = { id: string; specialty: string; hospital: string; referralDate: string; 
+  confirmedSteps?: number[];
+};
 
 function parseDate(dateStr: string): Date {
   if (!dateStr) return new Date();
@@ -28,23 +30,38 @@ function getStatus(referralDate: string) {
   if (w >= 14) return { text: 'Due soon', bg: '#FAEEDA', color: '#854F0B' };
   return { text: 'On track', bg: '#EAF3DE', color: '#3B6D11' };
 }
-function getSteps(referralDate: string, hospital: string) {
+
+function getSteps(referralDate: string, hospital: string, confirmedSteps: number[] = []) {
   if (!referralDate) return [
-    { label: 'GP referral sent', date: 'Date unknown', done: false },
-    { label: 'Received by hospital', date: 'Pending', done: false },
-    { label: 'Under clinical review', date: 'Pending', done: false },
-    { label: 'Appointment booking', date: 'Pending', done: false },
-    { label: 'First appointment', date: 'Pending', done: false },
+    { label: 'GP referral sent', date: 'Date unknown', done: false, confirmable: false },
+    { label: 'Received by hospital', date: 'Pending', done: false, confirmable: false },
+    { label: 'Under clinical review', date: 'Pending', done: false, confirmable: false },
+    { label: 'Appointment booking', date: 'Pending', done: false, confirmable: false },
+    { label: 'First appointment', date: 'Pending', done: false, confirmable: false },
   ];
   const referred = parseDate(referralDate);
-  const w = getWeeksWaited(referralDate);
-  const addWeeks = (date: Date, weeks: number) => { const d = new Date(date); d.setDate(d.getDate() + weeks * 7); return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }); };
+  const addWeeks = (date: Date, weeks: number) => {
+    const d = new Date(date);
+    d.setDate(d.getDate() + weeks * 7);
+    return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+  };
+  const estPassed = (weeks: number) => {
+    const d = new Date(referred);
+    d.setDate(d.getDate() + weeks * 7);
+    return new Date() >= d;
+  };
+
+  const done1 = confirmedSteps.includes(1);
+  const done2 = confirmedSteps.includes(2);
+  const done3 = confirmedSteps.includes(3);
+  const done4 = confirmedSteps.includes(4);
+
   return [
-    { label: 'GP referral sent', date: referralDate, done: true },
-    { label: `Received by ${hospital || 'hospital'}`, date: addWeeks(referred, 1), done: w >= 1 },
-    { label: 'Under clinical review', date: addWeeks(referred, 3), done: w >= 3 },
-    { label: 'Appointment booking', date: `Est. ${addWeeks(referred, 10)}`, done: w >= 10 },
-    { label: 'First appointment', date: `Est. ${addWeeks(referred, 18)}`, done: w >= 18 },
+    { label: 'GP referral sent', date: referralDate, done: true, confirmable: false },
+    { label: `Received by ${hospital || 'hospital'}`, date: `Est. ${addWeeks(referred, 1)}`, done: done1, confirmable: !done1 },
+    { label: 'Under clinical review', date: `Est. ${addWeeks(referred, 3)}`, done: done2, confirmable: !done2 && (estPassed(3) || done1) },
+    { label: 'Appointment booking', date: `Est. ${addWeeks(referred, 10)}`, done: done3, confirmable: !done3 && (estPassed(10) || done2) },
+    { label: 'First appointment', date: `Est. ${addWeeks(referred, 18)}`, done: done4, confirmable: !done4 && (estPassed(18) || done3) },
   ];
 }
 
@@ -53,6 +70,7 @@ export default function TrackScreen() {
   const scheme = useColorScheme();
   const C = scheme === 'dark' ? DarkColors : LightColors;
   const styles = makeStyles(C);
+  const nhs = useNHSData();
 
   const [referrals, setReferrals] = useState<Referral[]>([]);
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -62,6 +80,7 @@ export default function TrackScreen() {
   const [newReferralDate, setNewReferralDate] = useState('');
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [selectedDate, setSelectedDate] = useState(new Date());
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   useFocusEffect(useCallback(() => {
     async function load() {
@@ -87,17 +106,58 @@ export default function TrackScreen() {
 
   async function saveReferrals(updated: Referral[]) { setReferrals(updated); await AsyncStorage.setItem('user_referrals', JSON.stringify(updated)); }
 
-  function openAddModal() { setNewSpecialty(''); setNewHospital(''); setNewReferralDate(''); setShowAddModal(true); }
+function openAddModal() { 
+  setNewSpecialty(''); 
+  setNewHospital(''); 
+  setNewReferralDate(''); 
+  setEditingId(null); 
+  setShowAddModal(true); 
+  setSelectedDate(new Date());
+}
+
+  function openEditModal(ref: Referral) {
+    setNewSpecialty(ref.specialty);
+    setNewHospital(ref.hospital);
+    setNewReferralDate(ref.referralDate);
+    setEditingId(ref.id);
+    setShowAddModal(true);
+    setSelectedDate(ref.referralDate ? parseDate(ref.referralDate) : new Date());
+}
 
   async function confirmAdd() {
-    if (!newSpecialty) return;
-    const newRef: Referral = { id: Date.now().toString(), specialty: newSpecialty, hospital: newHospital, referralDate: newReferralDate };
-    await scheduleReferralNotifications(newRef);
-    const updated = [...referrals, newRef];
+  if (!newSpecialty) return;
+  if (editingId) {
+    // EDIT: update existing referral
+    const updated = referrals.map(r => {
+      if (r.id !== editingId) return r;
+      // if the date changed, reset confirmations — old confirms may not apply
+      const dateChanged = r.referralDate !== newReferralDate;
+      return {
+        ...r,
+        specialty: newSpecialty,
+        hospital: newHospital,
+        referralDate: newReferralDate,
+        confirmedSteps: dateChanged ? [] : r.confirmedSteps,
+      };
+    });
     await saveReferrals(updated);
-    setExpandedId(newRef.id);
+    const edited = updated.find(r => r.id === editingId);
+    if (edited) {
+      await cancelReferralNotifications(edited.id);
+      await scheduleReferralNotifications(edited);
+    }
+    setEditingId(null);
     setShowAddModal(false);
+    return;
   }
+  // ADD: unchanged from before
+  const newRef: Referral = { id: Date.now().toString(), specialty: newSpecialty, hospital: newHospital, referralDate: newReferralDate };
+  await scheduleReferralNotifications(newRef);
+  const updated = [...referrals, newRef];
+  await saveReferrals(updated);
+  setExpandedId(newRef.id);
+  setShowAddModal(false);
+}
 
   function deleteReferral(id: string, specialty: string) {
     Alert.alert(`Remove ${specialty}?`, 'This referral will be permanently removed.', [
@@ -112,6 +172,30 @@ export default function TrackScreen() {
       },
     ]);
   }
+
+  function confirmStep(refId: string, stepIndex: number, stepLabel: string) {
+  Alert.alert(
+    'Has this happened yet?',
+    `"${stepLabel}" — confirm only if this has actually happened.`,
+    [
+      { text: 'Not yet', style: 'cancel' },
+      {
+        text: 'Yes, confirm',
+        onPress: async () => {
+          const updated = referrals.map(r => {
+            if (r.id !== refId) return r; // other referrals untouched
+            const confirmed = new Set(r.confirmedSteps ?? []);
+            // confirming a step also confirms earlier ones (can't have an
+            // appointment without the hospital having received the referral)
+            for (let i = 1; i <= stepIndex; i++) confirmed.add(i);
+            return { ...r, confirmedSteps: [...confirmed].sort() };
+          });
+          await saveReferrals(updated);
+        },
+      },
+    ]
+  );
+}
 
   return (
     <View style={{ flex: 1, backgroundColor: C.bg, paddingTop: insets.top }}>
@@ -132,7 +216,8 @@ export default function TrackScreen() {
         {referrals.length > 0 ? referrals.map(ref => {
           const isExpanded = expandedId === ref.id;
           const status = getStatus(ref.referralDate);
-          const STEPS = getSteps(ref.referralDate, ref.hospital);
+          const STEPS = getSteps(ref.referralDate, ref.hospital, ref.confirmedSteps ?? []);
+
           return (
             <View key={ref.id} style={styles.referralCard}>
               <TouchableOpacity style={styles.cardTop} onPress={() => setExpandedId(isExpanded ? null : ref.id)} activeOpacity={0.7}>
@@ -177,7 +262,13 @@ export default function TrackScreen() {
                   <View style={styles.divider} />
                   <Text style={styles.timelineHeader}>PATHWAY</Text>
                   {STEPS.map((step, i) => (
-                    <View key={step.label} style={styles.stepRow}>
+                    <TouchableOpacity
+                      key={step.label}
+                      style={styles.stepRow}
+                      disabled={step.done || !step.confirmable}
+                      onPress={() => confirmStep(ref.id, i, step.label)}
+                      activeOpacity={0.6}
+                    >
                       <View style={styles.stepLeft}>
                         <View style={[styles.circle, step.done ? styles.circleDone : styles.circlePending]}>
                           {step.done && <Text style={styles.tick}>✓</Text>}
@@ -187,17 +278,27 @@ export default function TrackScreen() {
                       <View style={styles.stepText}>
                         <Text style={[styles.stepLabel, !step.done && styles.stepLabelPending]}>{step.label}</Text>
                         <Text style={styles.stepDate}>{step.date}</Text>
+                        {!step.done && step.confirmable && (
+                          <Text style={{ fontSize: 11, color: '#005EB8', marginTop: 2 }}>Tap to confirm ›</Text>
+                        )}
                       </View>
-                    </View>
+                    </TouchableOpacity>
                   ))}
+
+                  <Text style={{ fontSize: 10, color: C.textSecondary, marginBottom: 10, lineHeight: 15 }}>
+                    Estimated dates are based on the referral date you entered and typical NHS timelines. Always confirm your actual status with your GP or trust.
+                  </Text>
 
                   <View style={styles.cardActions}>
                     <TouchableOpacity style={styles.chaserBtn} onPress={() => Alert.alert('Send chaser letter?', `Generate a letter to ${ref.hospital || 'your hospital'} for your ${ref.specialty} referral.`, [{ text: 'Cancel', style: 'cancel' }, { text: 'Generate letter', onPress: () => Alert.alert('✓ Letter ready', 'Copy it and send to your hospital PALS team.') }])}>
                       <Text style={styles.chaserBtnText}>Send chaser letter ›</Text>
                     </TouchableOpacity>
-                    <TouchableOpacity style={styles.deleteBtn} onPress={() => deleteReferral(ref.id, ref.specialty)}>
-                      <Feather name="trash-2" size={14} color={C.red} />
-                    </TouchableOpacity>
+                    <TouchableOpacity style={styles.deleteBtn} onPress={() => openEditModal(ref)}>
+  <Feather name="edit-2" size={14} color={C.textMid} />
+</TouchableOpacity>
+<TouchableOpacity style={styles.deleteBtn} onPress={() => deleteReferral(ref.id, ref.specialty)}>
+  <Feather name="trash-2" size={14} color={C.red} />
+</TouchableOpacity>
                   </View>
 
                   {ref.referralDate && (
@@ -239,7 +340,7 @@ export default function TrackScreen() {
           <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
             <ScrollView style={[styles.modal]} keyboardShouldPersistTaps="handled">
               <View style={[styles.modalHeader, { paddingTop: insets.top + 20 }]}>
-                <Text style={styles.modalTitle}>Add referral</Text>
+                <Text style={styles.modalTitle}>{editingId ? 'Edit referral' : 'Add referral'}</Text>
                 <TouchableOpacity onPress={() => setShowAddModal(false)}>
                   <Text style={styles.modalCancel}>Cancel</Text>
                 </TouchableOpacity>
@@ -249,7 +350,7 @@ export default function TrackScreen() {
                 <Text style={styles.modalSectionTitle}>SPECIALTY</Text>
                 <Text style={styles.modalSectionSub}>Select your referral specialty</Text>
                 <View style={styles.pillGrid}>
-                  {SPECIALTY_NAMES.map(s => (
+                  {nhs.specialtyNames.map(s => (
                     <TouchableOpacity key={s} style={[styles.pill, newSpecialty === s && styles.pillActive]} onPress={() => setNewSpecialty(s)}>
                       <Text style={[styles.pillText, newSpecialty === s && styles.pillTextActive]}>{s}</Text>
                     </TouchableOpacity>

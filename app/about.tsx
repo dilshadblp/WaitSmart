@@ -4,22 +4,23 @@ import { Linking, ScrollView, Share, StyleSheet, Text, TouchableOpacity, useColo
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AppColors, DarkColors, LightColors } from '../constants/Colors';
 import { CONFIG } from '../constants/config';
-import { DATA_SOURCE } from '../constants/nhsData';
+import { useNHSData } from '../constants/liveNHSData';
 
 export default function AboutScreen() {
   const insets = useSafeAreaInsets();
   const scheme = useColorScheme();
   const C = scheme === 'dark' ? DarkColors : LightColors;
   const styles = makeStyles(C);
+  const nhs = useNHSData();
 
   async function handleShare() {
-    try {
-      await Share.share({
-        message: '7.1M NHS patients are waiting — did you know you have the right to switch to a faster hospital?\n\nI\'m using WaitSmart to track my NHS referral and find shorter waits nearby. It\'s free.\n\nDownload it on Android: https://github.com/dilshadblp/WaitSmart',
-        title: 'WaitSmart — Your NHS, faster.',
-      });
-    } catch (e) {}
-  }
+  try {
+    await Share.share({
+      message: `${(nhs.totalWaiting / 1000000).toFixed(1)}M NHS patients are waiting — did you know you have the right to switch to a faster hospital?\n\nI'm using WaitSmart to track my NHS referral and find shorter waits nearby. It's free.\n\nDownload it on Android: https://play.google.com/store/apps/details?id=com.waitsmart.app`,
+      title: 'WaitSmart — Your NHS, faster.',
+    });
+  } catch (e) {}
+}
 
   return (
     <View style={{ flex: 1, backgroundColor: C.bg, paddingTop: insets.top, paddingBottom: insets.bottom }}>
@@ -42,7 +43,7 @@ export default function AboutScreen() {
       <View style={styles.section}>
         <Text style={styles.sectionLabel}>THE PROBLEM</Text>
         <Text style={styles.bodyText}>
-          Over 7 million people in England are on an NHS waiting list right now. Most of them don't know they have a legal right — established in {CONFIG.NHS_CHOICE_YEAR} — to choose any NHS hospital that offers their treatment. A patient waiting 30 weeks at one trust could be seen in 9 weeks at another.
+          Over {(nhs.totalWaiting / 1000000).toFixed(1)} million people in England are on an NHS waiting list right now.. Most of them don't know they have a legal right — established in {CONFIG.NHS_CHOICE_YEAR} — to choose any NHS hospital that offers their treatment. A patient waiting 30 weeks at one trust could be seen in 9 weeks at another.
         </Text>
         <Text style={[styles.bodyText, { marginTop: 10 }]}>
           The information to make that switch exists. But it's scattered across PDFs, government websites, and trust-specific portals. No independent mobile app brought it together in one place — until now.
@@ -73,12 +74,12 @@ export default function AboutScreen() {
         <Text style={styles.sectionLabel}>NHS DATA</Text>
         <View style={styles.statsRow}>
           <View style={styles.statItem}>
-            <Text style={styles.statNum}>{(DATA_SOURCE.totalWaiting / 1000000).toFixed(1)}M</Text>
+            <Text style={styles.statNum}>{(nhs.totalWaiting / 1000000).toFixed(1)}M</Text>
             <Text style={styles.statLabel}>patients waiting</Text>
           </View>
           <View style={styles.statDivider} />
           <View style={styles.statItem}>
-            <Text style={styles.statNum}>{DATA_SOURCE.nationalMedian}wk</Text>
+            <Text style={styles.statNum}>{nhs.nationalMedian}wk</Text>
             <Text style={styles.statLabel}>median wait</Text>
           </View>
           <View style={styles.statDivider} />
@@ -87,7 +88,7 @@ export default function AboutScreen() {
             <Text style={styles.statLabel}>right to choose</Text>
           </View>
         </View>
-        <Text style={styles.dataSource}>Source: NHS England RTT Statistics · {DATA_SOURCE.period}</Text>
+        <Text style={styles.dataSource}>Source: NHS England RTT Statistics · {nhs.dataPeriod}</Text>
       </View>
 
       <View style={styles.section}>
@@ -103,6 +104,7 @@ export default function AboutScreen() {
       <View style={styles.section}>
         <Text style={styles.sectionLabel}>LINKS</Text>
         {[
+          { icon: 'play' as const, label: 'View on Google Play', url: 'https://play.google.com/store/apps/details?id=com.waitsmart.app' },
           { icon: 'github' as const, label: 'View on GitHub', url: 'https://github.com/dilshadblp/WaitSmart' },
           { icon: 'file-text' as const, label: 'Privacy Policy', url: 'https://github.com/dilshadblp/WaitSmart/blob/main/PRIVACY_POLICY.md' },
           { icon: 'bar-chart-2' as const, label: 'NHS RTT Statistics', url: 'https://www.england.nhs.uk/statistics/statistical-work-areas/rtt-waiting-times/' },

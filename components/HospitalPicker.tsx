@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { FlatList, Modal, StyleSheet, Text, TextInput, TouchableOpacity, useColorScheme, View } from 'react-native';
 import { AppColors, DarkColors, LightColors } from '../constants/Colors';
-import { ALL_HOSPITAL_NAMES } from '../constants/nhsData';
+import { useNHSData } from '../constants/liveNHSData';
 
 type Props = { value: string; onChange: (name: string) => void; };
 
@@ -12,6 +12,8 @@ export default function HospitalPicker({ value, onChange }: Props) {
 
   const [modalVisible, setModalVisible] = useState(false);
   const [search, setSearch] = useState('');
+  const nhs = useNHSData();
+  const ALL_HOSPITAL_NAMES = nhs.allHospitalNames;
 
   const filtered = search.length >= 2
     ? ALL_HOSPITAL_NAMES.filter(h => h.toLowerCase().includes(search.toLowerCase()))

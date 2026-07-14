@@ -1,9 +1,8 @@
 import { router } from 'expo-router';
-import { useEffect, useState } from 'react';
 import { Linking, ScrollView, StyleSheet, Text, TouchableOpacity, useColorScheme, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AppColors, DarkColors, LightColors } from '../../constants/Colors';
-import { CONFIG } from '../../constants/config';
+import { useNHSData } from '../../constants/liveNHSData';
 
 export default function RightsScreen() {
   const insets = useSafeAreaInsets();
@@ -11,14 +10,8 @@ export default function RightsScreen() {
   const C = scheme === 'dark' ? DarkColors : LightColors;
   const styles = makeStyles(C);
 
-  const [totalWaiting, setTotalWaiting] = useState('7.1M');
-
-  useEffect(() => {
-    fetch(CONFIG.NHS_STATS_URL)
-      .then(r => r.json())
-      .then(d => setTotalWaiting((d.totalWaiting / 1000000).toFixed(1) + 'M'))
-      .catch(() => { });
-  }, []);
+  const nhs = useNHSData();
+  const totalWaiting = (nhs.totalWaiting / 1000000).toFixed(1) + 'M';
 
   const RIGHTS = [
     {

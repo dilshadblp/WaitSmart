@@ -1,11 +1,11 @@
 import { Feather } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router, useFocusEffect } from 'expo-router';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { ScrollView, Share, StyleSheet, Text, TouchableOpacity, useColorScheme, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AppColors, DarkColors, LightColors } from '../../constants/Colors';
-import { CONFIG } from '../../constants/config';
+import { useNHSData } from '../../constants/liveNHSData';
 
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
@@ -17,8 +17,7 @@ export default function HomeScreen() {
   const [specialty, setSpecialty] = useState('');
   const [hospital, setHospital] = useState('');
   const [referralDate, setReferralDate] = useState('');
-  const [nhsStats, setNhsStats] = useState<any>(null);
-  const [statsLoading, setStatsLoading] = useState(true);
+  const nhs = useNHSData();
 
   function parseDate(dateStr: string): Date {
     if (!dateStr) return new Date();
@@ -47,27 +46,15 @@ export default function HomeScreen() {
     return `${Math.min(Math.round((weeks / 18) * 100), 100)}%`;
   }
 
-  async function fetchLiveStats() {
-    try {
-      setStatsLoading(true);
-      const data = await (await fetch(CONFIG.NHS_STATS_URL)).json();
-      setNhsStats(data);
-    } catch (e) {
-    } finally {
-      setStatsLoading(false);
-    }
-  }
+ async function handleShare() {
+  try {
+    await Share.share({
+      message: `${(nhs.totalWaiting / 1000000).toFixed(1)}M NHS patients are waiting — did you know you have the right to switch to a faster hospital?\n\nI'm using WaitSmart to track my NHS referral and find shorter waits nearby. It's free.\n\nDownload it on Android: https://play.google.com/store/apps/details?id=com.waitsmart.app`,
+      title: 'WaitSmart — Your NHS, faster.',
+    });
+  } catch (e) {}
+}
 
-  async function handleShare() {
-    try {
-      await Share.share({
-        message: '7.1M NHS patients are waiting — did you know you have the right to switch to a faster hospital?\n\nI\'m using WaitSmart to track my NHS referral and find shorter waits nearby. It\'s free.\n\nDownload it on Android: https://github.com/dilshadblp/WaitSmart',
-        title: 'WaitSmart — Your NHS, faster.',
-      });
-    } catch (e) {}
-  }
-
-  useEffect(() => { fetchLiveStats(); }, []);
   useFocusEffect(useCallback(() => { loadUserData(); }, []));
 
   async function loadUserData() {
@@ -142,33 +129,24 @@ export default function HomeScreen() {
       </View>
 
       <View style={styles.statsCard}>
-        <Text style={styles.statsLabel}>NHS ENGLAND · {nhsStats ? nhsStats.dataPeriod.toUpperCase() : 'LIVE DATA'}</Text>
-        {statsLoading ? (
-          <View style={styles.statsRow}>
-            <Text style={{ color: C.textSecondary, fontSize: 12, textAlign: 'center', flex: 1 }}>Loading latest NHS data...</Text>
-          </View>
-        ) : nhsStats ? (
-          <View style={styles.statsRow}>
-            <View style={styles.statItem}>
-              <Text style={styles.statNumber}>{(nhsStats.totalWaiting / 1000000).toFixed(1)}M</Text>
-              <Text style={styles.statSub}>waiting</Text>
-            </View>
-            <View style={styles.statDivider} />
-            <View style={styles.statItem}>
-              <Text style={[styles.statNumber, { color: C.red }]}>{100 - nhsStats.percentWithin18Weeks}%</Text>
-              <Text style={styles.statSub}>over 18wk</Text>
-            </View>
-            <View style={styles.statDivider} />
-            <View style={styles.statItem}>
-              <Text style={[styles.statNumber, { color: C.green }]}>{nhsStats.percentWithin18Weeks}%</Text>
-              <Text style={styles.statSub}>on target</Text>
-            </View>
-          </View>
-        ) : (
-          <View style={styles.statsRow}>
-            <Text style={{ color: C.textSecondary, fontSize: 12, textAlign: 'center', flex: 1 }}>Connect to internet to see live NHS stats</Text>
-          </View>
-        )}
+        <Text style={styles.statsLabel}>NHS ENGLAND · {nhs.dataPeriod.toUpperCase()}</Text>
+<View style={styles.statsRow}>
+  <View style={styles.statItem}>
+    <Text style={styles.statNumber}>{(nhs.totalWaiting / 1000000).toFixed(1)}M</Text>
+    <Text style={styles.statSub}>waiting</Text>
+  </View>
+  <View style={styles.statDivider} />
+  <View style={styles.statItem}>
+    <Text style={[styles.statNumber, { color: C.red }]}>{100 - nhs.percentWithin18Weeks}%</Text>
+    <Text style={styles.statSub}>over 18wk</Text>
+  </View>
+  <View style={styles.statDivider} />
+  <View style={styles.statItem}>
+    <Text style={[styles.statNumber, { color: C.green }]}>{nhs.percentWithin18Weeks}%</Text>
+    <Text style={styles.statSub}>on target</Text>
+  </View>
+</View>
+        
         <TouchableOpacity style={styles.statsBtn} onPress={() => router.push('/rights')}>
           <Text style={styles.statsBtnText}>Your right to choose a faster trust ›</Text>
         </TouchableOpacity>

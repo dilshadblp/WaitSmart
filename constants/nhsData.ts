@@ -11,10 +11,10 @@
 export const DATA_SOURCE = {
   name: 'NHS England RTT Waiting Times Statistics',
   url: 'https://www.england.nhs.uk/statistics/statistical-work-areas/rtt-waiting-times/',
-  period: 'March 2026',
-  nationalMedian: 11.3,
+  period: 'April 2026',
+  nationalMedian: 11.9,
   nationalTarget: 18,
-  totalWaiting: 7110000,
+  totalWaiting: 7220000,
   dataAge: 'Data updated monthly from NHS England published statistics',
 };
 

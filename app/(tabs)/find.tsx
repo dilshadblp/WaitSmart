@@ -4,7 +4,7 @@ import { useCallback, useRef, useState } from 'react';
 import { Alert, ScrollView, StyleSheet, Text, TouchableOpacity, useColorScheme, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { AppColors, DarkColors, LightColors } from '../../constants/Colors';
-import { DATA_SOURCE, NHS_RTT_DATA, SPECIALTY_NAMES } from '../../constants/nhsData';
+import { useNHSData } from '../../constants/liveNHSData';
 
 function getStatus(weeks: number) {
   if (weeks <= 10) return { label: 'Short wait', bg: '#EAF3DE', color: '#3B6D11' };
@@ -17,6 +17,7 @@ export default function FindScreen() {
   const scheme = useColorScheme();
   const C = scheme === 'dark' ? DarkColors : LightColors;
   const styles = makeStyles(C);
+  const nhs = useNHSData();
 
   const [selected, setSelected] = useState(0);
   const [selectedRegion, setSelectedRegion] = useState('All');
@@ -30,7 +31,7 @@ export default function FindScreen() {
       setUserHospital(hosp || '');
       const userSpecialty = await AsyncStorage.getItem('user_specialty');
       if (userSpecialty && userSpecialty !== '') {
-        const index = SPECIALTY_NAMES.findIndex(s => s.toLowerCase() === userSpecialty.toLowerCase());
+        const index = nhs.specialtyNames.findIndex(s => s.toLowerCase() === userSpecialty.toLowerCase());
         if (index !== -1) {
           setSelected(index);
           setSelectedRegion('All');
@@ -48,14 +49,14 @@ export default function FindScreen() {
       }
     }
     autoSelectSpecialty();
-  }, []));
+  }, [nhs.specialtyNames]));
 
-  const currentSpecialty = SPECIALTY_NAMES[selected];
-  const specialtyData = NHS_RTT_DATA[currentSpecialty];
+  const currentSpecialty = nhs.specialtyNames[selected];
+const specialtyData = nhs.rttData[currentSpecialty];
   const ALL_HOSPITALS = specialtyData?.hospitals || [];
   const regions = ['All', ...Array.from(new Set(ALL_HOSPITALS.map(h => h.region))).sort()];
   const HOSPITALS = selectedRegion === 'All' ? ALL_HOSPITALS : ALL_HOSPITALS.filter(h => h.region === selectedRegion);
-  const nationalMedian = DATA_SOURCE.nationalMedian;
+  const nationalMedian = nhs.nationalMedian;
   const bestAvailable = ALL_HOSPITALS.length > 0 ? ALL_HOSPITALS[0].medianWeeks : null;
   const userHospitalData = userHospital
     ? ALL_HOSPITALS.find(h => h.name.toLowerCase().includes(userHospital.toLowerCase()))
@@ -76,13 +77,13 @@ export default function FindScreen() {
         <Text style={styles.title}>Find shorter wait</Text>
         <Text style={styles.subtitle}>Exercise your legal right · Any NHS trust in England</Text>
         <Text style={{ fontSize: 11, color: '#EF9F27', marginTop: 4 }}>
-          ⚠ Data: NHS England {DATA_SOURCE.period} · Verify with your GP before switching
+         ⚠ Data: NHS England {nhs.dataPeriod} · Verify with your GP before switching
         </Text>
       </View>
 
       {/* SPECIALTY PILLS */}
       <ScrollView ref={scrollRef} horizontal showsHorizontalScrollIndicator={false} style={styles.pillRow}>
-        {SPECIALTY_NAMES.map((s, i) => (
+        {nhs.specialtyNames.map((s, i) => (
           <TouchableOpacity
             key={s}
             style={[styles.pill, i === selected && styles.pillActive]}
@@ -197,15 +198,14 @@ export default function FindScreen() {
                 <TouchableOpacity
                   style={styles.switchBtn}
                   onPress={() => Alert.alert(
-                    'Switch to ' + h.name + '?',
-                    'This will notify your GP to update your referral to ' + h.name + '. They will contact you within 5 working days to confirm.',
-                    [
-                      { text: 'Cancel', style: 'cancel' },
-                      { text: 'Yes, switch trust', onPress: () => Alert.alert('✓ Request sent', 'Your GP has been notified. You will receive confirmation within 5 working days.') }
-                    ]
-                  )}
+  'Switch to ' + h.name + '?',
+  'Under your Right to Choose, you can ask for your referral to be moved to ' + h.name + '.\n\nHow to do it:\n\n1. Contact your GP practice (phone or online form)\n2. Say: "I\'d like to exercise my Right to Choose and have my referral sent to ' + h.name + '"\n3. Your GP must support any reasonable request\n\nTip: mention the shorter waiting time you found in WaitSmart.',
+  [
+    { text: 'Close', style: 'cancel' },
+  ]
+)}
                 >
-                  <Text style={styles.switchBtnText}>{isTop ? 'Switch to this trust ›' : 'Switch ›'}</Text>
+                  <Text style={styles.switchBtnText}>{isTop ? 'How to switch ›' : 'How ›'}</Text>
                 </TouchableOpacity>
               </View>
             </View>

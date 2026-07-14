@@ -1,13 +1,11 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import DateTimePicker from '@react-native-community/datetimepicker';
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Alert, Linking, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, useColorScheme, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import HospitalPicker from '../../components/HospitalPicker';
 import { AppColors, DarkColors, LightColors } from '../../constants/Colors';
 import { CONFIG } from '../../constants/config';
-import { DATA_SOURCE, SPECIALTY_NAMES } from '../../constants/nhsData';
+import { useNHSData } from '../../constants/liveNHSData';
 import { cancelAllNotifications } from '../../constants/notifications';
 
 export default function ProfileScreen() {
@@ -15,36 +13,23 @@ export default function ProfileScreen() {
   const C = scheme === 'dark' ? DarkColors : LightColors;
   const styles = makeStyles(C);
   const insets = useSafeAreaInsets();
+  const nhs = useNHSData();
 
   const [name, setName] = useState('');
-  const [specialty, setSpecialty] = useState('');
-  const [hospital, setHospital] = useState('');
-  const [referralDate, setReferralDate] = useState('');
-  const [showDatePicker, setShowDatePicker] = useState(false);
-  const [selectedDate, setSelectedDate] = useState(new Date());
   const [saved, setSaved] = useState(false);
 
   useEffect(() => { loadData(); }, []);
 
-  async function loadData() {
-    const n = await AsyncStorage.getItem('user_name');
-    const s = await AsyncStorage.getItem('user_specialty');
-    const h = await AsyncStorage.getItem('user_hospital');
-    const d = await AsyncStorage.getItem('user_referral_date');
-    if (n) setName(n);
-    if (s) setSpecialty(s);
-    if (h) setHospital(h);
-    if (d) setReferralDate(d);
-  }
+async function loadData() {
+  const n = await AsyncStorage.getItem('user_name');
+  if (n) setName(n);
+}
 
-  async function saveChanges() {
-    await AsyncStorage.setItem('user_name', name.trim());
-    await AsyncStorage.setItem('user_specialty', specialty);
-    await AsyncStorage.setItem('user_hospital', hospital.trim());
-    await AsyncStorage.setItem('user_referral_date', referralDate);
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
-  }
+async function saveChanges() {
+  await AsyncStorage.setItem('user_name', name.trim());
+  setSaved(true);
+  setTimeout(() => setSaved(false), 2000);
+}
 
   async function resetApp() {
     Alert.alert('Reset app?', 'This will clear all your data and take you back to the start.', [
@@ -85,66 +70,6 @@ export default function ProfileScreen() {
         />
       </View>
 
-      {/* SPECIALTY */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>YOUR SPECIALTY</Text>
-        <Text style={styles.sectionSub}>Select your referral specialty</Text>
-        <View style={styles.pillGrid}>
-          {SPECIALTY_NAMES.map(s => (
-            <TouchableOpacity
-              key={s}
-              style={[styles.pill, specialty === s && styles.pillActive]}
-              onPress={() => setSpecialty(s)}
-            >
-              <Text style={[styles.pillText, specialty === s && styles.pillTextActive]}>{s}</Text>
-            </TouchableOpacity>
-          ))}
-          <TouchableOpacity
-            style={[styles.pill, specialty === '' && styles.pillActive]}
-            onPress={() => setSpecialty('')}
-          >
-            <Text style={[styles.pillText, specialty === '' && styles.pillTextActive]}>No referral</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-
-      {/* HOSPITAL */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>YOUR HOSPITAL</Text>
-        <HospitalPicker value={hospital} onChange={setHospital} />
-      </View>
-
-      {/* REFERRAL DATE */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>REFERRAL DATE</Text>
-        <TouchableOpacity style={styles.input} onPress={() => setShowDatePicker(true)}>
-          <Text style={{ color: referralDate ? C.textPrimary : C.textTertiary, fontSize: 15 }}>
-            {referralDate || 'Tap to select date'}
-          </Text>
-        </TouchableOpacity>
-        {showDatePicker && (
-          <DateTimePicker
-            value={selectedDate}
-            mode="date"
-            display="spinner"
-            maximumDate={new Date()}
-            minimumDate={new Date(new Date().setFullYear(new Date().getFullYear() - 3))}
-            onChange={(event, date) => {
-              setShowDatePicker(false);
-              if (date) {
-                setSelectedDate(date);
-                setReferralDate(date.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }));
-              }
-            }}
-          />
-        )}
-        {referralDate ? (
-          <TouchableOpacity onPress={() => setReferralDate('')}>
-            <Text style={{ color: C.red, fontSize: 12, marginTop: 6 }}>Clear date</Text>
-          </TouchableOpacity>
-        ) : null}
-      </View>
-
       {/* SAVE */}
       <TouchableOpacity
         style={[styles.saveBtn, saved && styles.saveBtnSuccess]}
@@ -168,7 +93,7 @@ export default function ProfileScreen() {
         <Text style={styles.infoText}>Your data is stored on your phone only.</Text>
         <Text style={styles.infoText}>We never share or sell your information.</Text>
         <Text style={[styles.infoText, { color: C.blueText, marginTop: 8 }]}>
-          Data: NHS England RTT Statistics · {DATA_SOURCE.period}
+          Data: NHS England RTT Statistics · {nhs.dataPeriod}
         </Text>
         <View style={styles.infoLinks}>
           <TouchableOpacity onPress={() => router.push('/about')}>

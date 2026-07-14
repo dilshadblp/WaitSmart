@@ -1,12 +1,12 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { router } from 'expo-router';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, useColorScheme, View } from 'react-native';
 import HospitalPicker from '../components/HospitalPicker';
 import { AppColors, DarkColors, LightColors } from '../constants/Colors';
 import { CONFIG } from '../constants/config';
-import { DATA_SOURCE, SPECIALTY_NAMES } from '../constants/nhsData';
+import { useNHSData } from '../constants/liveNHSData';
 import { scheduleReferralNotifications } from '../constants/notifications';
 
 export default function OnboardingScreen() {
@@ -21,14 +21,8 @@ export default function OnboardingScreen() {
   const [step, setStep] = useState(1);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [selectedDate, setSelectedDate] = useState(new Date());
-  const [totalWaiting, setTotalWaiting] = useState((DATA_SOURCE.totalWaiting / 1000000).toFixed(1) + 'M');
-
-  useEffect(() => {
-    fetch(CONFIG.NHS_STATS_URL)
-      .then(r => r.json())
-      .then(d => setTotalWaiting((d.totalWaiting / 1000000).toFixed(1) + 'M'))
-      .catch(() => { });
-  }, []);
+  const nhs = useNHSData();
+  const totalWaiting = (nhs.totalWaiting / 1000000).toFixed(1) + 'M';
 
   async function handleFinish() {
     if (!name.trim()) return;
@@ -98,7 +92,7 @@ export default function OnboardingScreen() {
             <Text style={styles.cardTitle}>Do you have an active referral?</Text>
             <Text style={styles.cardSub}>Select your specialty — or skip if you don't have one yet</Text>
             <View style={styles.pillGrid}>
-              {SPECIALTY_NAMES.map(s => (
+              {nhs.specialtyNames.map(s => (
                 <TouchableOpacity
                   key={s}
                   style={[styles.pill, specialty === s && styles.pillActive]}
